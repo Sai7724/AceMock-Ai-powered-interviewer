@@ -1,0 +1,517 @@
+import React from 'react';
+import { LightBulbIcon, CheckIcon, CodeBracketIcon, MicrophoneIcon, UserCircleIcon, CpuChipIcon, ChartBarIcon, ClockIcon } from '../constants';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useRef, useMemo, useState } from 'react';
+import * as THREE from 'three';
+import { CatmullRomCurve3, Vector3 } from 'three';
+
+interface WelcomeProps {
+  onStart: () => void;
+}
+
+interface SectionProps {
+  children: React.ReactNode;
+  className?: string;
+  id?: string;
+}
+const Section = ({ children, className = '', id }: SectionProps) => (
+  <section id={id} className={`py-24 sm:py-36 lg:py-44 ${className} font-sans`}>
+    <div className="max-w-6xl mx-auto px-8 sm:px-16 lg:px-24">
+      {children}
+    </div>
+  </section>
+);
+
+const SectionTitle = ({ children, subtitle }: { children: React.ReactNode, subtitle?: string }) => (
+  <div className="text-center mb-20 sm:mb-28">
+    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-100 font-sans tracking-tight leading-tight">
+      {children}
+    </h2>
+    {subtitle && <p className="mt-8 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto font-sans leading-relaxed">{subtitle}</p>}
+  </div>
+);
+
+// Modern 3D Hero Background: Animated Particles + Floating Glass Panels
+// If you want type safety for three.js, run: npm i --save-dev @types/three
+function Particles({ count = 120 }) {
+  const mesh = useRef<THREE.InstancedMesh | null>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const positions = useMemo(() =>
+    Array.from({ length: count }, () => [
+      (Math.random() - 0.5) * 16,
+      (Math.random() - 0.5) * 8,
+      (Math.random() - 0.5) * 10
+    ]), [count]);
+  useFrame(({ clock }) => {
+    if (!mesh.current) return;
+    positions.forEach((pos, i) => {
+      const t = clock.getElapsedTime() + i;
+      dummy.position.set(
+        pos[0] + Math.sin(t * 0.7 + i) * 0.2,
+        pos[1] + Math.cos(t * 0.5 + i) * 0.2,
+        pos[2] + Math.sin(t * 0.3 + i) * 0.2
+      );
+      dummy.updateMatrix();
+      mesh.current!.setMatrixAt(i, dummy.matrix);
+    });
+    mesh.current.instanceMatrix.needsUpdate = true;
+  });
+  return (
+    <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
+      <sphereGeometry args={[0.09, 12, 12]} />
+      <meshStandardMaterial color="#67e8f9" emissive="#0ea5e9" emissiveIntensity={0.7} transparent opacity={0.7} />
+    </instancedMesh>
+  );
+}
+
+function GlassPanels({ count = 7 }) {
+  const mesh = useRef<THREE.InstancedMesh | null>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const panels = useMemo(() =>
+    Array.from({ length: count }, (_, i) => ({
+      x: (Math.random() - 0.5) * 10,
+      y: (Math.random() - 0.5) * 6,
+      z: (Math.random() - 0.5) * 8,
+      r: Math.random() * Math.PI * 2,
+      s: 1.2 + Math.random() * 1.8
+    })), [count]);
+  useFrame(({ clock }) => {
+    if (!mesh.current) return;
+    panels.forEach((panel, i) => {
+      const t = clock.getElapsedTime() * 0.5 + i;
+      dummy.position.set(
+        panel.x + Math.sin(t + i) * 0.3,
+        panel.y + Math.cos(t + i) * 0.3,
+        panel.z + Math.sin(t * 0.7 + i) * 0.2
+      );
+      dummy.rotation.set(0, panel.r + Math.sin(t) * 0.2, 0);
+      dummy.scale.set(panel.s, panel.s * 0.18, 1);
+      dummy.updateMatrix();
+      mesh.current!.setMatrixAt(i, dummy.matrix);
+    });
+    mesh.current.instanceMatrix.needsUpdate = true;
+  });
+  return (
+    <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
+      <boxGeometry args={[1, 1, 0.08]} />
+      <meshPhysicalMaterial color="#e0f2fe" roughness={0.1} metalness={0.2} transmission={0.85} thickness={0.5} ior={1.5} transparent opacity={0.7} />
+    </instancedMesh>
+  );
+}
+
+// --- INTERACTIVE 3D HERO BACKGROUND ---
+type MouseRef = React.MutableRefObject<{ x: number; y: number }>;
+
+function HoloCard({ mouse }: { mouse: MouseRef }) {
+  const mesh = useRef<THREE.Mesh>(null);
+  useFrame(() => {
+    if (mesh.current) {
+      mesh.current.rotation.y = mouse.current.x * 0.3;
+      mesh.current.rotation.x = -mouse.current.y * 0.2;
+    }
+  });
+  return (
+    <mesh ref={mesh} position={[0, 0, 0]}>
+      <boxGeometry args={[3.2, 2, 0.12]} />
+      <meshPhysicalMaterial color="#181e2a" roughness={0.15} metalness={0.4} transmission={0.7} thickness={0.5} ior={1.6} transparent opacity={0.95} />
+      {/* Holographic border */}
+      <mesh position={[0, 0, 0.07]}>
+        <boxGeometry args={[3.22, 2.02, 0.01]} />
+        <meshBasicMaterial color="#67e8f9" wireframe />
+      </mesh>
+      {/* AceMock logo (simple circle + text) */}
+      <mesh position={[-1.1, 0.5, 0.08]}>
+        <circleGeometry args={[0.25, 32]} />
+        <meshBasicMaterial color="#38bdf8" />
+      </mesh>
+      {/* Title text (as a 3D plane for now) */}
+      <mesh position={[0.3, 0.5, 0.08]}>
+        <planeGeometry args={[1.4, 0.3]} />
+        <meshBasicMaterial color="#181e2a" />
+      </mesh>
+      {/* Simulated text using lines */}
+      <mesh position={[0.3, 0.5, 0.09]}>
+        <boxGeometry args={[1.2, 0.06, 0.01]} />
+        <meshBasicMaterial color="#67e8f9" />
+      </mesh>
+      <mesh position={[0.3, 0.4, 0.09]}>
+        <boxGeometry args={[0.8, 0.04, 0.01]} />
+        <meshBasicMaterial color="#a78bfa" />
+      </mesh>
+      {/* Simulated avatar icon */}
+      <mesh position={[-1.1, -0.4, 0.08]}>
+        <circleGeometry args={[0.18, 24]} />
+        <meshBasicMaterial color="#a78bfa" />
+      </mesh>
+    </mesh>
+  );
+}
+
+function NeuralNetwork({ mouse, onNodeHover }: { mouse: MouseRef; onNodeHover?: (i: number) => void }) {
+  const group = useRef<THREE.Group>(null);
+  const nodeRefs = useRef<Array<THREE.Mesh | null>>([]);
+  const [hovered, setHovered] = useState(-1);
+  useFrame(() => {
+    if (group.current) {
+      group.current.rotation.y = mouse.current.x * 0.4;
+      group.current.rotation.x = -mouse.current.y * 0.25;
+    }
+    nodeRefs.current.forEach((ref, i) => {
+      if (ref) {
+        ref.scale.setScalar(hovered === i ? 1.3 : 1 + Math.sin(Date.now() * 0.002 + i) * 0.08);
+      }
+    });
+  });
+  const nodes = Array.from({ length: 6 }, (_, i) => {
+    const angle = (i / 6) * Math.PI * 2;
+    return [Math.cos(angle) * 2.2, Math.sin(angle) * 1.2, 0.5 * Math.sin(angle * 2)];
+  });
+  return (
+    <group ref={group}>
+      {/* Lines */}
+      {nodes.map((a, i) => nodes.map((b, j) => i < j && (
+        <line key={i + '-' + j}>
+          <bufferGeometry>
+            <bufferAttribute
+              attach="attributes-position"
+              args={[new Float32Array([...a, ...b]), 3]}
+            />
+          </bufferGeometry>
+          <lineBasicMaterial color="#67e8f9" linewidth={2} />
+        </line>
+      )))}
+      {/* Nodes */}
+      {nodes.map((pos, i) => (
+        <mesh
+          key={i}
+          ref={(el: THREE.Mesh | null) => (nodeRefs.current[i] = el)}
+          position={pos as [number, number, number]}
+          onPointerOver={() => { setHovered(i); onNodeHover && onNodeHover(i); }}
+          onPointerOut={() => setHovered(-1)}
+        >
+          <sphereGeometry args={[0.18, 24, 24]} />
+          <meshStandardMaterial color={hovered === i ? "#a78bfa" : "#67e8f9"} emissive="#0ea5e9" emissiveIntensity={0.7} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function HeroScene() {
+  const mouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const { size } = useThree();
+  function handlePointerMove(e: any) {
+    mouse.current.x = (e.clientX / size.width - 0.5) * 2;
+    mouse.current.y = (e.clientY / size.height - 0.5) * 2;
+  }
+  function handleNodeHover(i: number) {}
+  return (
+    <group onPointerMove={handlePointerMove}>
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[5, 5, 5]} intensity={1.3} />
+      <HoloCard mouse={mouse} />
+      <NeuralNetwork mouse={mouse} onNodeHover={handleNodeHover} />
+    </group>
+  );
+}
+
+function OrganicNeuralMesh3D() {
+  const nodeCount = 32;
+  const neighborCount = 3;
+  const nodeRadius = 2.8;
+  const group = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const mouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [targetRot, setTargetRot] = useState({ x: 0, y: 0 });
+
+  // Randomly generate node positions on a sphere
+  const nodes = useMemo(() => {
+    return Array.from({ length: nodeCount }, (_, i) => {
+      const phi = Math.acos(1 - 2 * (i + 0.5) / nodeCount);
+      const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+      const x = Math.cos(theta) * Math.sin(phi) * nodeRadius + (Math.random() - 0.5) * 0.3;
+      const y = Math.sin(theta) * Math.sin(phi) * nodeRadius + (Math.random() - 0.5) * 0.3;
+      const z = Math.cos(phi) * nodeRadius + (Math.random() - 0.5) * 0.3;
+      return [x, y, z];
+    });
+  }, [nodeCount, nodeRadius]);
+
+  // Find nearest neighbors for each node
+  const edges = useMemo(() => {
+    const arr: [number, number][] = [];
+    for (let i = 0; i < nodeCount; i++) {
+      // Compute distances to all other nodes
+      const dists = nodes.map(([x, y, z], j) => ({
+        j,
+        dist: Math.sqrt(
+          Math.pow(nodes[i][0] - x, 2) +
+          Math.pow(nodes[i][1] - y, 2) +
+          Math.pow(nodes[i][2] - z, 2)
+        )
+      }));
+      dists.sort((a, b) => a.dist - b.dist);
+      for (let k = 1; k <= neighborCount; k++) {
+        if (i < dists[k].j) arr.push([i, dists[k].j]);
+      }
+    }
+    return arr;
+  }, [nodes, nodeCount, neighborCount]);
+
+  // Animate mesh rotation and breathing
+  useFrame(({ clock }) => {
+    if (group.current) {
+      // Smoothly interpolate rotation
+      group.current.rotation.y += (targetRot.y - group.current.rotation.y) * 0.08;
+      group.current.rotation.x += (targetRot.x - group.current.rotation.x) * 0.08;
+      // Breathing effect
+      const t = clock.getElapsedTime();
+      group.current.position.z = Math.sin(t * 0.7) * 0.5;
+    }
+  });
+
+  // Mouse move handler (on Canvas)
+  function handlePointerMove(e: any) {
+    if (!e.pointerType || e.pointerType === 'mouse') {
+      const rect = e.target.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      setTargetRot({ x: -y * 0.5, y: x * 0.7 });
+    }
+  }
+
+  return (
+    <group ref={group}>
+      {/* Edges */}
+      {edges.map(([a, b], i) => (
+        <line key={i}>
+          <bufferGeometry>
+            <bufferAttribute
+              attach="attributes-position"
+              args={[new Float32Array([...nodes[a], ...nodes[b]]), 3]}
+            />
+          </bufferGeometry>
+          <lineBasicMaterial color="#67e8f9" linewidth={2} />
+        </line>
+      ))}
+      {/* Nodes */}
+      {nodes.map(([x, y, z], i) => (
+        <mesh
+          key={i}
+          position={[x, y, z]}
+          onPointerOver={() => setHovered(i)}
+          onPointerOut={() => setHovered(null)}
+          scale={hovered === i ? 1.5 : 1.1 + Math.sin(Date.now() * 0.002 + i) * 0.12}
+        >
+          <sphereGeometry args={[0.16, 28, 28]} />
+          <meshStandardMaterial
+            color="#e0f2fe"
+            emissive={hovered === i ? "#faffb0" : "#67e8f9"}
+            emissiveIntensity={hovered === i ? 1.5 : 1.1}
+            transparent
+            opacity={0.98}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function InteractiveHero3D() {
+  return (
+    <Canvas camera={{ position: [0, 0, 10], fov: 60 }} dpr={[1, 2]} style={{ cursor: 'pointer' }} onPointerMove={handlePointerMove}>
+      <ambientLight intensity={0.9} />
+      <directionalLight position={[5, 5, 5]} intensity={1.5} />
+      <OrganicNeuralMesh3D />
+    </Canvas>
+  );
+  function handlePointerMove(e: any) {
+    // This will be passed to the mesh via props
+    // (no-op here, actual handler is in OrganicNeuralMesh3D)
+  }
+}
+
+// Replace Hero3DBackground with InteractiveHero3D in Hero
+function Hero({ onStart }: WelcomeProps) {
+  return (
+    <div id="home" className="relative text-center py-36 sm:py-48 lg:py-56 overflow-hidden min-h-[800px] flex items-center justify-center font-sans bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900">
+      {/* Removed 3D Canvas background */}
+      <div className="relative z-10 max-w-4xl mx-auto px-4">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-50 to-cyan-400 mb-10 animate-fade-in-up font-sans tracking-tight leading-tight">
+          Unlock Your Career Potential
+        </h1>
+        <p className="max-w-4xl mx-auto text-xl sm:text-2xl text-slate-300 mb-16 animate-fade-in-up delay-200 font-sans leading-relaxed">
+          AceMock is your personal AI interview coach. Practice with realistic questions, get instant, detailed feedback, and build the confidence to land your dream job.
+        </p>
+        <div className="animate-fade-in-up delay-400">
+          <button
+            onClick={onStart}
+            className="bg-cyan-500 text-white font-bold py-5 px-16 rounded-2xl shadow-2xl shadow-cyan-500/20 transform hover:scale-105 transition-all duration-300 ease-in-out text-2xl hover:bg-cyan-400 font-sans"
+          >
+            Start Your Free Assessment
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AceTutorSection() {
+  return (
+    <Section id="acetutor" className="bg-slate-900/80 animate-fade-in-up">
+      <SectionTitle subtitle="Your personalized AI-powered study planner, integrated with YouTube and Google Drive.">
+        Introducing AceTutor
+      </SectionTitle>
+      <div className="max-w-3xl mx-auto text-center text-slate-300 text-lg mb-8">
+        AceTutor helps you create a day-wise, goal-driven learning path using the best YouTube videos and generates daily study documents for you. Plan your learning journey, get curated resources, and track your progress—all in one place!
+      </div>
+      <div className="flex justify-center">
+        <a href="/acetutor" className="bg-cyan-500 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-cyan-500/30 transform hover:scale-105 transition-all duration-300 ease-in-out text-lg border-2 border-transparent hover:border-cyan-300">
+          Go to AceTutor
+        </a>
+      </div>
+    </Section>
+  );
+}
+
+const HowItWorks = () => (
+  <Section id="howitworks">
+    <SectionTitle subtitle="A straightforward path to interview mastery in five simple steps.">
+      How It Works
+    </SectionTitle>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 text-center">
+      {[
+        { icon: <CheckIcon className="w-8 h-8"/>, title: "1. Pick Your Path", description: "Select the language or tech stack you want to focus on." },
+        { icon: <MicrophoneIcon className="w-8 h-8"/>, title: "2. Self-Introduction", description: "Record your intro and get feedback on your delivery and structure." },
+        { icon: <ClockIcon className="w-8 h-8"/>, title: "3. Aptitude Test", description: "Test your logical and quantitative skills in a timed challenge." },
+        { icon: <LightBulbIcon className="w-8 h-8"/>, title: "4. Technical Q&A", description: "Answer a targeted technical question based on your chosen path." },
+        { icon: <CodeBracketIcon className="w-8 h-8"/>, title: "5. Coding Challenge", description: "Solve a real-world coding problem in your selected language." }
+      ].map((step, i) => (
+        <div key={i} className={`p-6 bg-slate-800/50 rounded-xl border border-slate-700 animate-fade-in-up delay-${i * 100 + 100}`}>
+          <div className="flex items-center justify-center h-16 w-16 rounded-full bg-slate-700/50 text-cyan-400 mx-auto mb-4">
+            {step.icon}
+          </div>
+          <h3 className="text-xl font-bold text-slate-100 mb-2">{step.title}</h3>
+          <p className="text-slate-400 text-sm">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </Section>
+);
+
+const Features = () => (
+  <Section id="features" className="bg-slate-900/70">
+    <SectionTitle subtitle="Leverage cutting-edge AI to gain a competitive edge.">
+      Why AceMock?
+    </SectionTitle>
+    <div className="grid md:grid-cols-2 gap-8">
+        {[
+          { icon: <CpuChipIcon className="w-7 h-7" />, title: "AI-Powered Analysis", description: "Receive granular feedback on your answers, powered by Google's Gemini API for state-of-the-art analysis." },
+          { icon: <CodeBracketIcon className="w-7 h-7" />, title: "Personalized Challenges", description: "Practice with questions and coding problems dynamically generated for your chosen tech stack." },
+          { icon: <ChartBarIcon className="w-7 h-7" />, title: "Track Your Progress", description: "Detailed scoring and reports help you identify strengths and pinpoint areas for targeted improvement." },
+          { icon: <CheckIcon className="w-7 h-7" />, title: "Build Confidence", description: "Walk into any interview room prepared, composed, and ready to demonstrate your true potential." },
+        ].map((feature, i) => (
+          <div key={i} className={`flex items-start gap-4 p-6 animate-fade-in-up delay-${i * 100 + 100}`}>
+            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+              {feature.icon}
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-100">{feature.title}</h3>
+              <p className="mt-1 text-slate-400">{feature.description}</p>
+            </div>
+          </div>
+        ))}
+    </div>
+  </Section>
+);
+
+const aboutCards = [
+  {
+    icon: <CpuChipIcon className="w-10 h-10 text-cyan-400 mb-4" />, 
+    title: 'AI-Powered Feedback',
+    desc: 'Get instant, actionable feedback on every answer, powered by state-of-the-art AI.'
+  },
+  {
+    icon: <CodeBracketIcon className="w-10 h-10 text-cyan-400 mb-4" />, 
+    title: 'Personalized Practice',
+    desc: 'Practice with realistic, dynamic questions and coding challenges tailored to your tech stack.'
+  },
+  {
+    icon: <MicrophoneIcon className="w-10 h-10 text-cyan-400 mb-4" />, 
+    title: 'Voice & Progress Tools',
+    desc: 'Use speech-to-text, voice feedback, and detailed progress reports to master every stage.'
+  },
+  {
+    icon: <ChartBarIcon className="w-10 h-10 text-cyan-400 mb-4" />, 
+    title: 'Track & Improve',
+    desc: 'Monitor your strengths, pinpoint areas for growth, and build confidence for real interviews.'
+  },
+];
+
+const ProjectInfo = () => (
+  <Section id="projectinfo" className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 animate-fade-in-up">
+    <SectionTitle subtitle="What makes AceMock special?">About AceMock</SectionTitle>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto mt-12">
+      {aboutCards.map((card, i) => (
+        <div key={card.title} className={`flex flex-col items-center bg-slate-800/60 rounded-2xl p-8 border border-slate-700 shadow-lg animate-fade-in-up delay-${i * 100 + 100} hover:scale-105 hover:shadow-cyan-500/30 transition-transform duration-300`}>
+          {card.icon}
+          <h3 className="text-xl font-bold text-cyan-200 mb-2 text-center">{card.title}</h3>
+          <p className="text-slate-300 text-center">{card.desc}</p>
+        </div>
+      ))}
+    </div>
+  </Section>
+);
+
+const devTeam = [
+  { name: 'Sai Kumar', role: 'Lead Developer', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' },
+  { name: 'Priya Sharma', role: 'UI/UX Designer', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
+  { name: 'Rahul Verma', role: 'AI Engineer', avatar: 'https://randomuser.me/api/portraits/men/45.jpg' },
+  { name: 'Ananya Patel', role: 'Frontend Developer', avatar: 'https://randomuser.me/api/portraits/women/68.jpg' },
+];
+
+const DevTeam = () => (
+  <Section id="devteam" className="bg-slate-900/80 animate-fade-in-up">
+    <SectionTitle subtitle="Meet the creators behind AceMock">Our Dev Team</SectionTitle>
+    <div className="flex flex-wrap justify-center gap-8 mt-8 animate-fade-in-up delay-200">
+      {devTeam.map((member, i) => (
+        <div key={member.name} className="flex flex-col items-center bg-slate-800/60 rounded-2xl p-6 shadow-lg border border-slate-700 hover:scale-105 hover:shadow-cyan-500/30 transition-transform duration-300 animate-fade-in-up delay-400" style={{ animationDelay: `${i * 100 + 200}ms` }}>
+          <img src={member.avatar} alt={member.name} className="w-24 h-24 rounded-full border-4 border-cyan-400 shadow-md mb-4" />
+          <h4 className="text-xl font-bold text-cyan-300 mb-1">{member.name}</h4>
+          <p className="text-slate-300 text-base">{member.role}</p>
+        </div>
+      ))}
+    </div>
+  </Section>
+);
+
+const FinalCTA = ({ onStart }: { onStart: () => void }) => (
+    <Section className="!py-16">
+        <div className="text-center">
+             <h2 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-4 animate-fade-in-up">Ready to Ace Your Next Interview?</h2>
+             <p className="text-slate-400 text-lg mb-8 animate-fade-in-up delay-200">Get started now and receive your personalized feedback in minutes.</p>
+             <div className="animate-fade-in-up delay-400">
+                <button 
+                  onClick={onStart} 
+                  className="bg-cyan-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-cyan-500/20 transform hover:scale-105 transition-all duration-300 ease-in-out text-lg hover:bg-cyan-400"
+                >
+                    Begin Your Assessment
+                </button>
+             </div>
+        </div>
+    </Section>
+);
+
+
+export default function Welcome({ onStart }: WelcomeProps) {
+  return (
+    <div className="-m-6 sm:-m-10 animate-fade-in-slow">
+      <Hero onStart={onStart} />
+      <AceTutorSection />
+      <HowItWorks />
+      <Features />
+      <ProjectInfo />
+      <DevTeam />
+      <FinalCTA onStart={onStart}/>
+    </div>
+  );
+}
