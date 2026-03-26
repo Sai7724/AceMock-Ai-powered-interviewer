@@ -67,14 +67,31 @@ const Calculator = ({ onClose }: { onClose: () => void }) => {
 
 
 export default function AptitudeTest({ onComplete }: { onComplete: (feedback: AptitudeFeedback) => void }) {
+  const [hasStarted, setHasStarted] = useState(false);
   const [questions, setQuestions] = useState<AptitudeQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState(NUM_QUESTIONS * TIME_PER_QUESTION_S);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCalculator, setShowCalculator] = useState(false);
+
+  const startAssessment = async () => {
+    setHasStarted(true);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const fetchedQuestions = await generateAptitudeQuestions(NUM_QUESTIONS);
+      setQuestions(fetchedQuestions);
+      setUserAnswers(Array(fetchedQuestions.length).fill(''));
+    } catch (err) {
+      setError("Failed to load aptitude questions. Please try again later.");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const finishTest = useCallback(async (finalAnswers: string[]) => {
     setIsSubmitting(true);
@@ -91,23 +108,7 @@ export default function AptitudeTest({ onComplete }: { onComplete: (feedback: Ap
   }, [questions, onComplete]);
 
   useEffect(() => {
-    async function fetchQuestions() {
-      try {
-        const fetchedQuestions = await generateAptitudeQuestions(NUM_QUESTIONS);
-        setQuestions(fetchedQuestions);
-        setUserAnswers(Array(fetchedQuestions.length).fill(''));
-      } catch (err) {
-        setError("Failed to load aptitude questions. Please try again later.");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchQuestions();
-  }, []);
-
-  useEffect(() => {
-    if (isLoading || isSubmitting) return;
+    if (!hasStarted || isLoading || isSubmitting) return;
 
     if (timeLeft <= 0) {
       finishTest(userAnswers);
@@ -119,7 +120,7 @@ export default function AptitudeTest({ onComplete }: { onComplete: (feedback: Ap
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, isLoading, isSubmitting, finishTest, userAnswers]);
+  }, [hasStarted, timeLeft, isLoading, isSubmitting, finishTest, userAnswers]);
 
   const handleAnswerSelect = (answer: string) => {
     const newAnswers = [...userAnswers];
@@ -147,6 +148,47 @@ export default function AptitudeTest({ onComplete }: { onComplete: (feedback: Ap
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [handleKeyDown]);
+
+  if (!hasStarted) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-12 animate-fade-in">
+        <GlassSurface
+           width="100%"
+           height="auto"
+           borderRadius={32}
+           blur={16}
+           opacity={0.8}
+           backgroundOpacity={0.06}
+           className="p-10 text-center"
+        >
+          <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-300">
+            Phase 3
+          </div>
+          <h2 className="liquid-heading mb-4 text-4xl font-extrabold">Aptitude Round</h2>
+          <p className="liquid-copy mb-8 text-lg text-slate-300">
+            This round evaluates your numerical, logical, and verbal reasoning skills. You will have 90 seconds per question.
+          </p>
+          <div className="grid grid-cols-2 gap-4 mb-10 text-left">
+            <div className="liquid-panel-soft rounded-2xl p-4">
+              <p className="text-xs font-bold uppercase text-slate-500 mb-1">Total Questions</p>
+              <p className="text-xl font-bold text-white">{NUM_QUESTIONS}</p>
+            </div>
+            <div className="liquid-panel-soft rounded-2xl p-4">
+              <p className="text-xs font-bold uppercase text-slate-500 mb-1">Time Limit</p>
+              <p className="text-xl font-bold text-white">7:30 mins</p>
+            </div>
+          </div>
+          <GlassButton
+            onClick={startAssessment}
+            className="w-full rounded-full py-4 text-xl font-bold shadow-2xl shadow-blue-500/20"
+          >
+            Start Assessment
+          </GlassButton>
+          {error && <p className="mt-4 text-rose-300 text-sm">{error}</p>}
+        </GlassSurface>
+      </div>
+    );
+  }
 
 
   if (isLoading) {

@@ -13,41 +13,73 @@ interface TechnicalQAProps {
 }
 
 export default function TechnicalQA({ onComplete, language }: TechnicalQAProps) {
+  const [hasStarted, setHasStarted] = useState(false);
   const [questions, setQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    async function fetchQuestions() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const fetchedQuestions = await generateTechnicalQuestions(language);
-        setQuestions(fetchedQuestions);
-        setAnswers(Array(fetchedQuestions.length).fill(''));
-        const utterance = new SpeechSynthesisUtterance(`First question: ${fetchedQuestions[0]}`);
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
-      } catch (err) {
-        setError("Failed to load technical questions. Please try again later.");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
+  const startRound = async () => {
+    setHasStarted(true);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const fetchedQuestions = await generateTechnicalQuestions(language);
+      setQuestions(fetchedQuestions);
+      setAnswers(Array(fetchedQuestions.length).fill(''));
+      const utterance = new SpeechSynthesisUtterance(`First question: ${fetchedQuestions[0]}`);
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      setError("Failed to load technical questions. Please try again later.");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
-    fetchQuestions();
+  };
 
+  useEffect(() => {
     return () => {
       window.speechSynthesis.cancel();
       recognitionRef.current?.stop();
     };
-  }, [language]);
+  }, []);
+
+  if (!hasStarted) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-12 animate-fade-in">
+        <GlassSurface
+           width="100%"
+           height="auto"
+           borderRadius={32}
+           blur={16}
+           opacity={0.8}
+           backgroundOpacity={0.06}
+           className="p-10 text-center"
+        >
+          <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-300">
+            Stage 4
+          </div>
+          <h2 className="liquid-heading mb-4 text-4xl font-extrabold">Technical Q&A</h2>
+          <p className="liquid-copy mb-8 text-lg text-slate-300">
+            This round tests your technical depth and problem-solving skills in <span className="font-bold text-blue-400">{language}</span>. You will be asked 5 questions.
+          </p>
+          <GlassButton
+            onClick={startRound}
+            className="w-full rounded-full py-4 text-xl font-bold shadow-2xl shadow-blue-500/20"
+          >
+            Start Technical Round
+          </GlassButton>
+          {error && <p className="mt-4 text-rose-300 text-sm">{error}</p>}
+        </GlassSurface>
+      </div>
+    );
+  }
 
   const handleToggleListening = () => {
     if (isListening) {

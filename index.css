@@ -56,6 +56,10 @@
   --space-lg:  2rem;
   --space-xl:  3rem;
   --space-2xl: 5rem;
+
+  /* Section Padding Scale */
+  --section-px: clamp(1rem, 5vw, 4rem);
+  --section-py: clamp(4rem, 12vh, 10rem);
 }
 
 html {
@@ -659,7 +663,7 @@ body {
     --sidebar-ring: oklch(0.556 0 0);
   }
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;
@@ -668,3 +672,477 @@ body {
     @apply font-sans;
   }
 }
+
+/* iOS Liquid Glass Components - Crystal clear, minimal blur */
+.liquid-glass,
+.liquid-glass-soft,
+.liquid-shell,
+.liquid-pill,
+.liquid-panel,
+.liquid-panel-soft,
+.liquid-stat-card,
+.liquid-table-shell,
+.liquid-banner {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--glass-edge);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* iOS-style highlight - extremely subtle */
+.liquid-glass::before,
+.liquid-glass-soft::before,
+.liquid-shell::before,
+.liquid-pill::before,
+.liquid-panel::before,
+.liquid-panel-soft::before,
+.liquid-stat-card::before,
+.liquid-table-shell::before,
+.liquid-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.2), transparent 70%);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.liquid-glass>*,
+.liquid-glass-soft>*,
+.liquid-shell>*,
+.liquid-pill>*,
+.liquid-panel>*,
+.liquid-panel-soft>*,
+.liquid-stat-card>*,
+.liquid-table-shell>*,
+.liquid-banner>* {
+  position: relative;
+  z-index: 2;
+}
+
+/* iOS Control Center style */
+.liquid-glass {
+  background-color: rgba(21, 26, 33, 0.7);
+  backdrop-filter: blur(30px) saturate(200%);
+  border-radius: var(--radius-lg);
+}
+
+.liquid-pill {
+  border-radius: 999px;
+  background-color: rgba(21, 26, 33, 0.5);
+}
+
+.liquid-panel {
+  border-radius: var(--radius-lg);
+  background-color: rgba(21, 26, 33, 0.6);
+}
+
+.liquid-panel-soft {
+  border-radius: var(--radius-lg);
+  background-color: rgba(21, 26, 33, 0.4);
+}
+
+.liquid-stat-card {
+  border-radius: var(--radius-lg);
+  background-color: rgba(21, 26, 33, 0.6);
+  border: 1px solid var(--glass-edge);
+}
+
+.liquid-table-shell {
+  border-radius: var(--radius-lg);
+  background-color: rgba(21, 26, 33, 0.5);
+}
+
+.liquid-banner {
+  border-radius: var(--radius-lg);
+  background-color: rgba(21, 26, 33, 0.5);
+  border: 1px solid var(--glass-edge);
+}
+
+/* iOS Buttons - Clean, precise */
+.liquid-button-primary,
+.liquid-button-secondary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  backdrop-filter: blur(12px) saturate(1.8) brightness(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.8) brightness(1.1);
+}
+
+.liquid-button-primary.glass-surface {
+  background: linear-gradient(135deg, #FFD700, #F1D7A4) !important;
+  color: var(--btn-text, #000000) !important;
+  font-weight: 900 !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 10px 40px -5px rgba(255, 215, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+  text-shadow: none !important;
+}
+
+.liquid-button-primary.glass-surface:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 25px 50px -10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4);
+  background: linear-gradient(135deg, #FFFDE0, #FFD700) !important;
+}
+
+.liquid-button-secondary.glass-surface {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(20px) saturate(1.8) !important;
+}
+
+.liquid-button-secondary:hover {
+  transform: translateY(-4px);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6);
+}
+
+.liquid-button-secondary:active {
+  transform: scale(0.95);
+  transition-duration: 100ms;
+}
+
+/* iOS Card hover - subtle lift */
+.liquid-card-hover {
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.liquid-card-hover:hover {
+  transform: translateY(-6px);
+  border-color: rgba(212, 184, 124, 0.3);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(212, 184, 124, 0.3);
+  transition: all 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* iOS Hero - Clean ambient glow */
+.liquid-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-hero::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(212, 178, 140, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 60%, rgba(139, 180, 208, 0.15) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* iOS Inputs - Clean, crisp */
+.liquid-input {
+  border: 1px solid var(--glass-edge);
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.5rem;
+  color: var(--text-primary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.liquid-input:focus {
+  border-color: var(--accent-primary);
+  background-color: rgba(0, 0, 0, 0.3);
+  box-shadow: var(--glow-soft);
+  outline: none;
+}
+
+/* iOS Editor */
+.liquid-editor {
+  border: 1px solid var(--glass-edge-ios);
+  background-color: rgba(20, 28, 42, 0.7);
+  border-radius: 16px;
+  padding: 1rem;
+  color: var(--text-ios-primary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* iOS Text Styles */
+.liquid-heading {
+  color: var(--text-primary);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-family: 'Sora', sans-serif;
+}
+
+.liquid-copy {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-family: 'Inter', sans-serif;
+}
+
+.liquid-muted {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.liquid-kicker {
+  color: var(--accent-primary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.liquid-accent {
+  color: var(--accent-ios-gold-light);
+  font-weight: 500;
+}
+
+/* iOS Chips - Clean badges */
+.liquid-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-ios-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.liquid-chip-accent {
+  background-color: rgba(184, 216, 240, 0.15);
+  color: var(--accent-ios-blue-light);
+  border-color: rgba(184, 216, 240, 0.2);
+}
+
+.liquid-chip-success {
+  background-color: rgba(159, 215, 175, 0.15);
+  color: var(--success-ios);
+}
+
+.liquid-chip-warning {
+  background-color: rgba(255, 215, 159, 0.15);
+  color: var(--warning-ios);
+}
+
+.liquid-chip-danger {
+  background-color: rgba(255, 159, 159, 0.15);
+  color: var(--danger-ios);
+}
+
+/* iOS Progress */
+.liquid-progress-track {
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  height: 6px;
+}
+
+.liquid-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-ios-blue), var(--accent-ios-gold));
+  box-shadow: 0 0 8px rgba(184, 216, 240, 0.3);
+  position: relative;
+}
+
+/* iOS Action Buttons */
+.liquid-action-danger,
+.liquid-action-warning {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  font-weight: 500;
+  padding: 0.5rem 1.2rem;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.liquid-action-danger {
+  background: linear-gradient(145deg, rgba(255, 159, 159, 0.9), rgba(200, 120, 120, 0.95));
+  color: #ffffff;
+}
+
+.liquid-action-warning {
+  background: linear-gradient(145deg, rgba(255, 215, 159, 0.9), rgba(210, 170, 120, 0.95));
+  color: #000000;
+}
+
+/* iOS Table */
+.liquid-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.liquid-table thead th {
+  color: var(--text-ios-tertiary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.75rem 1rem;
+}
+
+.liquid-table tbody td {
+  color: var(--text-ios-secondary);
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.liquid-table tbody tr:hover td {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* iOS Navigation */
+.liquid-nav-link {
+  position: relative;
+  border-radius: 999px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.5rem 1.4rem;
+  color: var(--text-ios-secondary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.liquid-nav-link-active {
+  color: var(--accent-violet-light);
+  background-color: rgba(167, 139, 250, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.liquid-nav-link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+  transition: color 200ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* iOS Spinner */
+.liquid-spinner {
+  border-bottom-color: var(--accent-ios-blue-light);
+  filter: drop-shadow(0 0 6px rgba(184, 216, 240, 0.2));
+}
+
+/* iOS-specific glass depths */
+.ios-depth-1 {
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(255, 255, 255, 0.02) inset;
+}
+
+.ios-depth-2 {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 1px 3px rgba(255, 255, 255, 0.03) inset;
+}
+
+.ios-depth-3 {
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.4),
+    0 1px 4px rgba(255, 255, 255, 0.04) inset;
+}
+
+/* iOS Control Center style panel */
+.ios-control-center {
+  background-color: rgba(40, 50, 70, 0.6);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom-width: 2px;
+  border-bottom-color: rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.5),
+    0 1px 4px rgba(255, 255, 255, 0.05) inset;
+}
+
+/* iOS Notification style */
+.ios-notification {
+  background-color: rgba(35, 45, 65, 0.7);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(255, 255, 255, 0.03) inset;
+}
+
+/* Typography scale */
+.type-h1 {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.type-h2 {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.type-h3 {
+  font-family: 'Sora', sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  line-height: 1.3;
+}
+
+.type-body {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.type-caption {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -14,6 +14,7 @@ interface SelfIntroductionProps {
 }
 
 export default function SelfIntroduction({ onComplete }: SelfIntroductionProps) {
+  const [hasStarted, setHasStarted] = useState(false);
   const [introduction, setIntroduction] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +95,36 @@ export default function SelfIntroduction({ onComplete }: SelfIntroductionProps) 
       setIsLoading(false);
     }
   };
+
+  if (!hasStarted) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-12 animate-fade-in text-center">
+        <GlassSurface
+           width="100%"
+           height="auto"
+           borderRadius={32}
+           blur={16}
+           opacity={0.8}
+           backgroundOpacity={0.06}
+           className="p-10"
+        >
+          <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-emerald-300">
+            Stage 2
+          </div>
+          <h2 className="liquid-heading mb-4 text-4xl font-extrabold text-white">Self-Introduction</h2>
+          <p className="liquid-copy mb-8 text-lg text-slate-300">
+            Tell us about yourself. This is your chance to showcase your personality, background, and what drives you.
+          </p>
+          <GlassButton
+            onClick={() => setHasStarted(true)}
+            className="w-full rounded-full py-4 text-xl font-bold bg-[linear-gradient(135deg,var(--accent-emerald-strong),var(--accent-emerald))] shadow-2xl shadow-emerald-500/10"
+          >
+            Start Introduction
+          </GlassButton>
+        </GlassSurface>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col items-center gap-8 animate-fade-in font-sans px-4">

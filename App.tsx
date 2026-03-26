@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, createContext, useContext } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { AuthResponse, User } from '@supabase/supabase-js';
 import { InterviewStage, InterviewResults, SelfIntroductionFeedback, TechnicalQAFeedback, CodingFeedback, AptitudeFeedback, HRFeedback } from './types';
 import Navbar from './components/common/Header';
@@ -19,7 +19,8 @@ import TestStagesPage from './test-workflow/routes/TestStagesPage';
 import GlassButton from './components/common/GlassButton';
 import GlassSurface from './components/common/GlassSurface';
 import RouteBackground from './components/common/RouteBackground';
-import AuthModal from './components/AuthModal';
+import DarkVeil from './components/DarkVeil';
+import LoginPage from './components/LoginPage';
 
 
 // Authentication can only be bypassed when explicitly enabled for local debugging.
@@ -138,6 +139,8 @@ export default function App() {
           <Route path="/acetutor" element={<RouteBackground><ComingSoonPage /></RouteBackground>} />
           <Route path="/admin" element={<RouteBackground><AdminPanel /></RouteBackground>} />
           <Route path="/test-stages" element={<RouteBackground><TestStagesPage /></RouteBackground>} />
+          <Route path="/profile" element={<RouteBackground><Profile /></RouteBackground>} />
+          <Route path="/login" element={<RouteBackground><LoginPage /></RouteBackground>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
@@ -149,15 +152,13 @@ function MainApp() {
   const [stage, setStage] = useState<InterviewStage>(InterviewStage.WELCOME);
   const [results, setResults] = useState<InterviewResults>({});
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
-  const [showProfile, setShowProfile] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const [attemptId, setAttemptId] = useState(0);
+  const navigate = useNavigate();
 
   const handleReset = useCallback(() => {
     setStage(InterviewStage.WELCOME);
     setResults({});
     setSelectedLanguage('');
-    setShowLogin(false);
   }, []);
 
   const handleStartAssessment = useCallback(() => {
@@ -170,7 +171,7 @@ function MainApp() {
     }
 
     if (!user) {
-      setShowLogin(true);
+      navigate('/login');
       return;
     }
 
@@ -179,10 +180,6 @@ function MainApp() {
     setResults({});
     setSelectedLanguage('');
   }, [user]);
-
-  if (showProfile) {
-    return <Profile onReturnToHome={() => setShowProfile(false)} />;
-  }
 
   const handleLanguageSelect = useCallback((language: string) => {
     setSelectedLanguage(language);
@@ -242,7 +239,6 @@ function MainApp() {
 
   return (
     <div className="liquid-page min-h-screen flex flex-col items-center p-2 sm:p-3 lg:p-4 font-sans">
-      {!AUTH_DISABLED && showLogin && !user && <AuthModal onClose={() => setShowLogin(false)} />}
       {user && (
         <div className="absolute top-6 right-8 flex gap-4">
           {/* These buttons are now in Navbar, but keep for fallback */}
@@ -252,8 +248,6 @@ function MainApp() {
         onReset={handleReset}
         onStartAssessment={handleStartAssessment}
         showLandingNav={stage === InterviewStage.WELCOME}
-        onShowProfile={() => setShowProfile(true)}
-        onShowLogin={() => !AUTH_DISABLED && setShowLogin(true)}
         authDisabled={AUTH_DISABLED}
       />
       <main className={`w-full max-w-7xl px-4 sm:px-8 lg:px-12 ${stage === InterviewStage.WELCOME ? 'mt-8 pt-20' : 'mt-14 pt-20'}`}>

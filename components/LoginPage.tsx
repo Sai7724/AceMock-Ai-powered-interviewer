@@ -1,33 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../App';
-import GlassButton from './common/GlassButton';
 import GlassSurface from './common/GlassSurface';
+import GlassButton from './common/GlassButton';
+
 
 function getAuthErrorMessage(error: unknown, mode: 'login' | 'signup') {
-  if (!(error instanceof Error)) {
-    return 'An unexpected error occurred.';
-  }
-
+  if (!(error instanceof Error)) return 'An unexpected error occurred.';
   const message = error.message.toLowerCase();
-
   if (mode === 'signup' && message.includes('email rate limit exceeded')) {
     return 'Too many signup emails were requested. Check your inbox and spam for the earlier confirmation email, then wait before trying again.';
   }
-
   if (mode === 'signup' && message.includes('user already registered')) {
     return 'This email is already registered. Use Login instead.';
   }
-
   return error.message;
 }
 
-interface AuthModalProps {
-  onClose: () => void;
-}
-
-export default function AuthModal({ onClose }: AuthModalProps) {
-  const { signIn, signUp } = useAuth();
+export default function LoginPage() {
+  const { signIn, signUp, user } = useAuth();
+  const navigate = useNavigate();
   const isSubmittingRef = useRef(false);
+
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -38,12 +32,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const closeModal = () => {
-    setShowPassword(false);
-    setError(null);
-    setSuccess(null);
-    onClose();
-  };
+  // If already logged in, redirect home
+  useEffect(() => {
+    if (user) navigate('/', { replace: true });
+  }, [user, navigate]);
 
   function switchMode(next: 'login' | 'signup') {
     setMode(next);
@@ -55,30 +47,27 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (isSubmittingRef.current) return;
-
     isSubmittingRef.current = true;
     setError(null);
     setSuccess(null);
     setLoading(true);
+
     try {
       const normalizedEmail = email.trim();
-
       if (mode === 'login') {
         await signIn(normalizedEmail, password);
-        closeModal();
+        navigate('/', { replace: true });
       } else {
         const { session } = await signUp(normalizedEmail, password, {
           username: username.trim(),
           phone: phone.trim(),
         });
-
         if (!session) {
-          setSuccess('Account created. Check your email to confirm it, then log in.');
-          setMode('login');
+          setSuccess('Account created! Check your email to confirm it, then log in.');
+          switchMode('login');
           setPassword('');
-          setShowPassword(false);
         } else {
-          closeModal();
+          navigate('/', { replace: true });
         }
       }
     } catch (err) {
@@ -91,12 +80,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 px-4 py-12 backdrop-blur-2xl font-sans">
+
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 font-sans">
         {/* Logo / Brand */}
-        <div className="flex items-center gap-3 mb-10 select-none">
+        <Link to="/" className="flex items-center gap-3 mb-10 group select-none">
           <svg
             width="38" height="38" viewBox="0 0 24 24" fill="none"
-            className="text-cyan-400"
+            className="text-cyan-400 group-hover:text-cyan-300 transition-colors"
           >
             <path d="M16.886 7.114A5.5 5.5 0 0 0 7.114 16.886a5.5 5.5 0 0 0 9.772-9.772ZM12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -110,7 +100,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           >
             AceMock
           </span>
-        </div>
+        </Link>
 
         {/* Glass Wrapper */}
         <GlassSurface 
@@ -123,16 +113,6 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           displace={0.4}
           className="p-8 md:p-10 shadow-2xl relative z-10"
         >
-          {/* Close button in top right of modal */}
-          <button 
-            type="button" 
-            onClick={closeModal}
-            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
-            title="Close"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-
           {/* Tab switcher */}
           <div className="flex rounded-xl bg-white/5 p-1.5 mb-8 border border-white/10">
             {(['login', 'signup'] as const).map((tab) => (
@@ -257,35 +237,38 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             </GlassButton>
           </form>
 
-          {/* Social login block */}
-          <div className="mt-8">
-            <div className="flex items-center gap-4 py-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Or continue with</span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <button type="button" className="login-social-btn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="Google" />
-                Google
-              </button>
-              <button type="button" className="login-social-btn">
-                <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-                GitHub
-              </button>
-            </div>
+          {/* Back to home */}
+          <div className="mt-8 text-center">
+            <Link
+              to="/"
+              className="text-slate-500 hover:text-slate-300 text-sm transition-colors inline-flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to home
+            </Link>
           </div>
-
         </GlassSurface>
 
         {/* Footer note */}
-        <p className="mt-10 text-xs text-slate-500 text-center">
+        <p className="mt-10 text-xs text-slate-600 text-center">
           &copy; {new Date().getFullYear()} AceMock. All rights reserved.
         </p>
       </div>
 
       <style>{`
+        @keyframes orbFloat {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(3%, 5%) scale(1.05); }
+          66% { transform: translate(-3%, -3%) scale(0.97); }
+        }
+
+        @keyframes cardIn {
+          from { opacity: 0; transform: translateY(24px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         /* --- Inputs --- */
         .login-input {
           display: block;
@@ -305,6 +288,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           border-color: rgba(100, 180, 255, 0.45);
           background: rgba(255, 255, 255, 0.07);
           box-shadow: 0 0 0 3px rgba(100, 180, 255, 0.12);
+        }
+
+        @keyframes gradientShift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
 
         /* --- Social buttons --- */

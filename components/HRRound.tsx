@@ -11,20 +11,28 @@ interface HRRoundProps {
 }
 
 const HRRound = ({ onComplete }: HRRoundProps) => {
+  const [hasStarted, setHasStarted] = useState(false);
   const [questions, setQuestions] = useState<HRQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<string[]>([]);
   const [currentResponse, setCurrentResponse] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [recognition, setRecognition] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState(120);
   const [isTimeUp, setIsTimeUp] = useState(false);
 
-  useEffect(() => {
+  const startRound = () => {
+    setHasStarted(true);
     initializeSpeechRecognition();
     void loadQuestions();
+  };
+
+  useEffect(() => {
+    // Just initialize speech if hasn't started yet, or wait?
+    // Actually, we only need it once started.
   }, []);
 
   useEffect(() => {
@@ -68,11 +76,14 @@ const HRRound = ({ onComplete }: HRRoundProps) => {
   };
 
   const loadQuestions = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const hrQuestions = await generateHRQuestions();
       setQuestions(hrQuestions);
     } catch (error) {
       console.error('Error loading HR questions:', error);
+      setError("Failed to load HR questions. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -116,28 +127,15 @@ const HRRound = ({ onComplete }: HRRoundProps) => {
 
   const evaluateResponses = async (submittedResponses: string[] = responses) => {
     setIsEvaluating(true);
+    setError(null);
     try {
       const feedback = await evaluateHRResponse(questions, submittedResponses);
       onComplete(feedback);
     } catch (error) {
       console.error('Error evaluating HR responses:', error);
-      const fallbackFeedback: HRFeedback = {
-        strengths: ['Good communication skills', 'Professional demeanor'],
-        weaknesses: ['Could provide more specific examples', 'Consider expanding on experiences'],
-        suggestions: ['Practice STAR method responses', 'Prepare more detailed examples'],
-        score: 7,
-        communication: 7,
-        problemSolving: 6,
-        culturalFit: 7,
-        leadership: 6,
-        detailedResults: submittedResponses.map((response, index) => ({
-          question: questions[index]?.question || '',
-          response,
-          evaluation: 'Good response with room for improvement',
-          score: 7,
-        })),
-      };
-      onComplete(fallbackFeedback);
+      setError("Failed to get feedback from AI. Please try again.");
+      // ... rest of the fallback logic if I want to keep it, 
+      // but for now I'll just show the error.
     } finally {
       setIsEvaluating(false);
     }
@@ -168,7 +166,38 @@ const HRRound = ({ onComplete }: HRRoundProps) => {
   }
 
   const currentQuestion = questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const progress = ((currentQuestionIndex + 1) / (questions.length || 1)) * 100;
+
+  if (!hasStarted) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-12 animate-fade-in">
+        <GlassSurface
+           width="100%"
+           height="auto"
+           borderRadius={32}
+           blur={16}
+           opacity={0.8}
+           backgroundOpacity={0.06}
+           className="p-10 text-center"
+        >
+          <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-indigo-300">
+            Stage 5
+          </div>
+          <h2 className="liquid-heading mb-4 text-4xl font-extrabold">HR Round</h2>
+          <p className="liquid-copy mb-8 text-lg text-slate-300">
+            The Final Stage. This round assesses your communication, self-awareness, and cultural fit. Be prepared for behavioral and situational questions.
+          </p>
+          <GlassButton
+            onClick={startRound}
+            className="w-full rounded-full py-4 text-xl font-bold bg-[linear-gradient(135deg,var(--accent-blue-strong),var(--accent-blue))] shadow-2xl shadow-blue-500/20"
+          >
+            Start HR Interview
+          </GlassButton>
+          {error && <p className="mt-4 text-rose-300 text-sm">{error}</p>}
+        </GlassSurface>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 animate-fade-in px-4">

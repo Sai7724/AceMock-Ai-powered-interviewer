@@ -4,12 +4,14 @@ import GlassSurface from './GlassSurface';
 export type GlassButtonProps<T extends React.ElementType = 'button'> = {
   as?: T;
   variant?: 'primary' | 'secondary' | 'danger' | 'warning';
+  borderRadius?: number;
   children: React.ReactNode;
 } & React.ComponentPropsWithoutRef<T>;
 
 export default function GlassButton<T extends React.ElementType = 'button'>({
   as,
   variant = 'primary',
+  borderRadius = 999,
   children,
   className = '',
   ...props
@@ -25,9 +27,9 @@ export default function GlassButton<T extends React.ElementType = 'button'>({
   let backgroundOpacity = 0.05;
 
   if (isPrimary) {
-    brightness = 60;
-    opacity = 0.95;
-    backgroundOpacity = 0.1;
+    brightness = 100; // Let the gradient shine
+    opacity = 1;
+    backgroundOpacity = 0; // CSS handles the gradient
   } else if (isDanger) {
     brightness = 50;
     opacity = 0.9;
@@ -43,7 +45,7 @@ export default function GlassButton<T extends React.ElementType = 'button'>({
       as={Component}
       width="auto"
       height="auto"
-      borderRadius={999}
+      borderRadius={borderRadius}
       blur={12}
       brightness={brightness}
       opacity={opacity}
