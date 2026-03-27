@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, createContext, useContext } from 'react';
+import React, { useState, useCallback, useEffect, createContext, useContext, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { AuthResponse, User } from '@supabase/supabase-js';
 import { InterviewStage, InterviewResults, SelfIntroductionFeedback, TechnicalQAFeedback, CodingFeedback, AptitudeFeedback, HRFeedback } from './types';
@@ -16,8 +16,8 @@ import { saveInterviewReports } from './services/reportHistory';
 import { supabase } from './services/supabaseClient';
 import AdminPanel from './components/AdminPanel';
 import TestStagesPage from './test-workflow/routes/TestStagesPage';
-import GlassButton from './components/common/GlassButton';
-import GlassSurface from './components/common/GlassSurface';
+// import GlassButton from './components/common/GlassButton';
+// import GlassSurface from './components/common/GlassSurface';
 import RouteBackground from './components/common/RouteBackground';
 import DarkVeil from './components/DarkVeil';
 import LoginPage from './components/LoginPage';
@@ -155,6 +155,17 @@ function MainApp() {
   const [attemptId, setAttemptId] = useState(0);
   const navigate = useNavigate();
 
+  const isInterviewActive = useMemo(() => {
+    return [
+      InterviewStage.SELF_INTRODUCTION,
+      InterviewStage.APTITUDE_TEST,
+      InterviewStage.TECHNICAL_QA,
+      InterviewStage.CODING_CHALLENGE,
+      InterviewStage.HR_ROUND,
+    ].includes(stage);
+  }, [stage]);
+
+
   const handleReset = useCallback(() => {
     setStage(InterviewStage.WELCOME);
     setResults({});
@@ -247,8 +258,10 @@ function MainApp() {
       <Navbar
         onReset={handleReset}
         onStartAssessment={handleStartAssessment}
+        onLeaveInterview={handleReset}
         showLandingNav={stage === InterviewStage.WELCOME}
         authDisabled={AUTH_DISABLED}
+        isInterviewActive={isInterviewActive}
       />
       <main className={`w-full max-w-7xl px-4 sm:px-8 lg:px-12 ${stage === InterviewStage.WELCOME ? 'mt-8 pt-20' : 'mt-14 pt-20'}`}>
         {stage === InterviewStage.WELCOME ? (
@@ -257,15 +270,9 @@ function MainApp() {
       </main>
       {stage === InterviewStage.WELCOME && (
         <footer className="w-full max-w-7xl mt-16 px-4 sm:px-8 lg:px-0 text-slate-300 text-base animate-fade-in-up font-sans">
-          <GlassSurface
-            width="100%"
-            height="auto"
-            borderRadius={32}
-            blur={20}
-            opacity={0.8}
-            backgroundOpacity={0.06}
-            displace={0.5}
-            className="px-8 py-10"
+          <div
+            className="px-8 py-10 liquid-panel"
+            style={{ borderRadius: '32px' }}
           >
             <div className="flex flex-col md:flex-row justify-between items-center gap-10 py-6">
               <div className="flex flex-col items-center md:items-start mb-6 md:mb-0">
@@ -314,7 +321,7 @@ function MainApp() {
               </div>
             </div>
             <div className="text-center text-xs text-slate-500 pt-4">&copy; {new Date().getFullYear()} AceMock. All rights reserved.</div>
-          </GlassSurface>
+          </div>
         </footer>
       )}
     </div>
@@ -324,24 +331,21 @@ function MainApp() {
 function ComingSoonPage() {
   return (
     <div className="liquid-page min-h-screen text-slate-100 flex items-center justify-center px-6">
-      <GlassSurface
-        className="max-w-xl p-10 text-center"
-        borderRadius={32}
-        blur={16}
-        backgroundOpacity={0.06}
+      <div
+        className="max-w-xl p-10 text-center liquid-panel"
+        style={{ borderRadius: '32px' }}
       >
         <h1 className="mb-4 text-4xl font-extrabold text-cyan-300" style={{ fontFamily: 'Sora, Manrope, sans-serif' }}>AceTutor is coming soon</h1>
         <p className="text-slate-300 mb-8">
           The landing page linked to this route, but the actual feature has not been shipped yet.
         </p>
-        <GlassButton
-          as={Link}
+        <Link
           to="/"
-          className="rounded-full px-6 py-3 font-bold text-lg"
+          className="liquid-button-primary inline-flex items-center justify-center rounded-full px-8 py-3 font-bold text-lg"
         >
           Back to AceMock
-        </GlassButton>
-      </GlassSurface>
+        </Link>
+      </div>
     </div>
   );
 }

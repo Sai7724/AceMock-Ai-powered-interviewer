@@ -24,7 +24,7 @@ export default function StageFeedbackDetails({ stageId, feedback }: StageFeedbac
     <Card className="mb-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="liquid-kicker">Stage Feedback</p>
+          <p className="liquid-kicker text-[color:var(--accent-gold-strong)]">Stage Feedback</p>
           <h2 className="liquid-heading mt-3 text-3xl font-bold">{stage.label}</h2>
           <p className="liquid-copy mt-3">{stage.description}</p>
         </div>
@@ -33,7 +33,7 @@ export default function StageFeedbackDetails({ stageId, feedback }: StageFeedbac
 
       {stageId === 'aptitudeRound' && (
         <div className="liquid-panel-soft mt-6 p-4 liquid-copy">
-          Accuracy: <span className="liquid-accent font-semibold">{(feedback as AptitudeFeedback).correctCount}</span> / {(feedback as AptitudeFeedback).totalQuestions}
+          Accuracy: <span className="liquid-accent text-[color:var(--accent-gold-strong)] font-semibold">{(feedback as AptitudeFeedback).correctCount}</span> / {(feedback as AptitudeFeedback).totalQuestions}
         </div>
       )}
 
@@ -47,7 +47,7 @@ export default function StageFeedbackDetails({ stageId, feedback }: StageFeedbac
           ].map(([label, score]) => (
             <div key={label} className="liquid-panel-soft p-4 text-center">
               <p className="liquid-muted text-sm">{label}</p>
-              <p className="liquid-accent mt-2 text-2xl font-bold">{score}/10</p>
+              <p className="liquid-accent text-[color:var(--accent-gold-strong)] mt-2 text-2xl font-bold">{score}/10</p>
             </div>
           ))}
         </div>
@@ -61,7 +61,7 @@ export default function StageFeedbackDetails({ stageId, feedback }: StageFeedbac
             ['Efficiency', (feedback as CodingFeedback).efficiency],
           ].map(([label, value]) => (
             <div key={label} className={panelClass}>
-              <h3 className="liquid-accent font-semibold">{label}</h3>
+              <h3 className="liquid-accent text-[color:var(--accent-gold-strong)] font-semibold">{label}</h3>
               <p className="liquid-copy mt-2 text-sm leading-6">{value}</p>
             </div>
           ))}
@@ -117,7 +117,7 @@ export default function StageFeedbackDetails({ stageId, feedback }: StageFeedbac
                 </p>
               </div>
               <p className="liquid-copy mt-4 text-sm leading-6">
-                <span className="liquid-accent font-semibold">Feedback:</span> {result.evaluation}
+                <span className="liquid-accent text-[color:var(--accent-gold-strong)] font-semibold">Feedback:</span> {result.evaluation}
               </p>
             </div>
           ))}

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { generateTechnicalQuestions, evaluateTechnicalAnswers } from '../services/geminiService';
 import { TechnicalQAFeedback, SpeechRecognition } from '../types';
-import GlassButton from './common/GlassButton';
-import GlassSurface from './common/GlassSurface';
+// import GlassButton from './common/GlassButton';
+// import GlassSurface from './common/GlassSurface';
 import Spinner from './common/Spinner';
 
 const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -53,14 +53,9 @@ export default function TechnicalQA({ onComplete, language }: TechnicalQAProps) 
   if (!hasStarted) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-12 animate-fade-in">
-        <GlassSurface
-           width="100%"
-           height="auto"
-           borderRadius={32}
-           blur={16}
-           opacity={0.8}
-           backgroundOpacity={0.06}
-           className="p-10 text-center"
+        <div
+           className="p-10 text-center liquid-panel"
+           style={{ borderRadius: '32px' }}
         >
           <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-300">
             Stage 4
@@ -69,14 +64,14 @@ export default function TechnicalQA({ onComplete, language }: TechnicalQAProps) 
           <p className="liquid-copy mb-8 text-lg text-slate-300">
             This round tests your technical depth and problem-solving skills in <span className="font-bold text-blue-400">{language}</span>. You will be asked 5 questions.
           </p>
-          <GlassButton
+          <button
             onClick={startRound}
-            className="w-full rounded-full py-4 text-xl font-bold shadow-2xl shadow-blue-500/20"
+            className="w-full rounded-full py-4 text-xl font-bold shadow-2xl shadow-blue-500/20 liquid-button-primary"
           >
             Start Technical Round
-          </GlassButton>
+          </button>
           {error && <p className="mt-4 text-rose-300 text-sm">{error}</p>}
-        </GlassSurface>
+        </div>
       </div>
     );
   }
@@ -189,35 +184,25 @@ export default function TechnicalQA({ onComplete, language }: TechnicalQAProps) 
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col items-center animate-fade-in font-sans">
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="mb-6 text-center p-6"
+      <div
+        className="mb-6 text-center p-6 liquid-panel w-full"
+        style={{ borderRadius: '32px' }}
       >
         <p className="liquid-kicker">Stage 4</p>
         <h2 className="liquid-heading mt-3 text-3xl font-extrabold">Technical Q&A</h2>
         <p className="liquid-muted mt-3 font-semibold">
           Question {currentQuestionIndex + 1} of {questions.length}
         </p>
-      </GlassSurface>
+      </div>
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={20}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="mb-6 p-8 min-h-[140px] flex items-center"
+      <div
+        className="mb-6 p-8 min-h-[140px] flex items-center liquid-panel w-full"
+        style={{ borderRadius: '32px' }}
       >
         <p className="liquid-heading text-xl font-semibold sm:text-2xl leading-relaxed">
           {questions[currentQuestionIndex]}
         </p>
-      </GlassSurface>
+      </div>
 
       <textarea
         ref={textareaRef}
@@ -235,14 +220,9 @@ export default function TechnicalQA({ onComplete, language }: TechnicalQAProps) 
         </div>
       )}
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="mt-8 p-6"
+      <div
+        className="mt-8 p-6 liquid-panel w-full"
+        style={{ borderRadius: '32px' }}
       >
         <div className="flex w-full flex-col items-center justify-between gap-6 sm:flex-row">
           <p className="liquid-muted text-sm max-w-md italic">
@@ -259,16 +239,16 @@ export default function TechnicalQA({ onComplete, language }: TechnicalQAProps) 
                 <div className="h-6 w-6">🎤</div>
               </button>
             )}
-            <GlassButton
+            <button
               onClick={handleNext}
               disabled={isSubmitting || !answers[currentQuestionIndex]?.trim()}
-              className="rounded-full px-10 py-3.5 font-bold text-lg disabled:cursor-not-allowed disabled:opacity-30 transition-all shadow-xl shadow-blue-500/10"
+              className="liquid-button-primary rounded-full px-10 py-3.5 font-bold text-lg disabled:cursor-not-allowed disabled:opacity-30 transition-all shadow-xl shadow-blue-500/10"
             >
               {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Round'}
-            </GlassButton>
+            </button>
           </div>
         </div>
-      </GlassSurface>
+      </div>
     </div>
   );
 }

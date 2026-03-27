@@ -13,7 +13,7 @@ export default function RouteBackground({ children }: RouteBackgroundProps) {
         className="pointer-events-none fixed inset-0"
         style={{ zIndex: 0 }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(82,38,255,0.08)_0%,transparent_50%),radial-gradient(circle_at_80%_70%,rgba(0,0,0,0.35)_0%,transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(232,195,97,0.08)_0%,transparent_50%),radial-gradient(circle_at_80%_70%,rgba(0,0,0,0.35)_0%,transparent_60%)]" />
       </div>
 
       {/* Content layer */}

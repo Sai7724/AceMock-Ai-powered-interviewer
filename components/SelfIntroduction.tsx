@@ -4,7 +4,6 @@ import { SelfIntroductionFeedback, SpeechRecognition } from '../types';
 import Spinner from './common/Spinner';
 import { MicrophoneIcon } from '../constants';
 import GlassButton from './common/GlassButton';
-import GlassSurface from './common/GlassSurface';
 
 // Browser compatibility check
 const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -14,7 +13,6 @@ interface SelfIntroductionProps {
 }
 
 export default function SelfIntroduction({ onComplete }: SelfIntroductionProps) {
-  const [hasStarted, setHasStarted] = useState(false);
   const [introduction, setIntroduction] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,66 +94,20 @@ export default function SelfIntroduction({ onComplete }: SelfIntroductionProps) 
     }
   };
 
-  if (!hasStarted) {
-    return (
-      <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-12 animate-fade-in text-center">
-        <GlassSurface
-           width="100%"
-           height="auto"
-           borderRadius={32}
-           blur={16}
-           opacity={0.8}
-           backgroundOpacity={0.06}
-           className="p-10"
-        >
-          <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-emerald-300">
-            Stage 2
-          </div>
-          <h2 className="liquid-heading mb-4 text-4xl font-extrabold text-white">Self-Introduction</h2>
-          <p className="liquid-copy mb-8 text-lg text-slate-300">
-            Tell us about yourself. This is your chance to showcase your personality, background, and what drives you.
-          </p>
-          <GlassButton
-            onClick={() => setHasStarted(true)}
-            className="w-full rounded-full py-4 text-xl font-bold bg-[linear-gradient(135deg,var(--accent-emerald-strong),var(--accent-emerald))] shadow-2xl shadow-emerald-500/10"
-          >
-            Start Introduction
-          </GlassButton>
-        </GlassSurface>
-      </div>
-    );
-  }
-
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col items-center gap-8 animate-fade-in font-sans px-4">
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="text-center p-6"
-      >
-        <p className="liquid-kicker">Stage 2</p>
-        <h2 className="liquid-heading mt-3 text-3xl font-extrabold sm:text-4xl tracking-tight">
+    <div className="mx-auto flex w-full max-w-4xl flex-col items-center gap-6 animate-fade-in font-sans px-4">
+      <div className="text-center py-4">
+        <p className="liquid-kicker text-[color:var(--accent-gold-strong)] uppercase tracking-[0.2em] font-bold text-xs">Stage 2</p>
+        <h2 className="liquid-heading mt-2 text-4xl font-extrabold sm:text-5xl tracking-tight">
           Self-Introduction
         </h2>
-      </GlassSurface>
+      </div>
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={20}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="p-8 sm:p-10 flex items-center justify-center text-center"
-      >
-        <p className="liquid-copy text-xl font-medium leading-relaxed italic text-white/90">
+      <div className="w-full text-center py-2">
+        <p className="liquid-copy text-2xl font-medium leading-relaxed italic text-white/90">
           {"\""}{PROMPT}{"\""}
         </p>
-      </GlassSurface>
+      </div>
 
       <div className="w-full space-y-4">
         <div className="flex items-center justify-between px-2">
@@ -177,17 +129,10 @@ export default function SelfIntroduction({ onComplete }: SelfIntroductionProps) 
         </div>
       )}
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="p-6"
-      >
+      {/* Repositioned Controls directly under textarea */}
+      <div className="w-full flex flex-col items-center gap-8">
         <div className="flex w-full flex-col items-center justify-between gap-6 sm:flex-row">
-          <p className="liquid-muted text-sm max-w-xs italic text-slate-400">
+          <p className="text-slate-400 text-sm max-w-xs italic leading-relaxed text-center sm:text-left">
             Keep it concise, focusing on your unique strengths and career aspirations.
           </p>
 
@@ -209,13 +154,13 @@ export default function SelfIntroduction({ onComplete }: SelfIntroductionProps) 
             <GlassButton
               onClick={handleSubmit}
               disabled={isLoading || !introduction.trim()}
-              className="rounded-full px-10 py-4 font-bold text-lg shadow-2xl shadow-blue-500/10 disabled:cursor-not-allowed disabled:opacity-30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="rounded-full px-12 py-4 font-bold text-lg shadow-2xl shadow-blue-500/10 disabled:cursor-not-allowed disabled:opacity-30 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               {isLoading ? <Spinner /> : 'Submit for Analysis'}
             </GlassButton>
           </div>
         </div>
-      </GlassSurface>
+      </div>
     </div>
   );
 }

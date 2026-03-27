@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import Card from './common/Card';
 import GlassButton from './common/GlassButton';
-import GlassSurface from './common/GlassSurface';
 
 interface LanguageSelectionProps {
   onComplete?: (language: string) => void;
@@ -82,26 +81,24 @@ export default function LanguageSelection({ onComplete, onLanguageSelect }: Lang
 
   const handleContinue = () => {
     if (selectedLanguage && onComplete) {
+      // Trigger fullscreen mode for a locked-in interview experience
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch((err) => {
+          console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+      }
       onComplete(selectedLanguage);
     }
   };
 
   return (
-    <div className="flex w-full flex-col items-center animate-fade-in font-sans px-4 py-8">
+    <div className="flex w-full flex-col items-center animate-fade-in font-sans p-8 md:p-10 rounded-[40px] bg-[#0a0d14]/60 backdrop-blur-2xl border border-white/10 shadow-2xl">
       <div className="mb-12 text-center">
-        <GlassSurface
-          width="auto"
-          height="auto"
-          borderRadius={32}
-          blur={16}
-          opacity={0.8}
-          backgroundOpacity={0.06}
-          className="inline-block px-8 mb-6 p-4"
-        >
-          <div className="text-sm font-bold uppercase tracking-[0.3em] text-blue-400">
+        <div className="mb-6 px-4">
+          <div className="inline-block text-sm font-bold uppercase tracking-[0.3em] text-blue-400">
             Language Setup
           </div>
-        </GlassSurface>
+        </div>
         <h2 className="mb-4 text-center text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
           Choose Your Track
         </h2>
@@ -110,15 +107,7 @@ export default function LanguageSelection({ onComplete, onLanguageSelect }: Lang
         </p>
       </div>
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="mb-10 max-w-4xl p-4"
-      >
+      <div className="mb-10 w-full max-w-4xl">
         <div className="flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
             <input
@@ -145,7 +134,7 @@ export default function LanguageSelection({ onComplete, onLanguageSelect }: Lang
             ))}
           </div>
         </div>
-      </GlassSurface>
+      </div>
 
       <div className="grid w-full max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((option) => {

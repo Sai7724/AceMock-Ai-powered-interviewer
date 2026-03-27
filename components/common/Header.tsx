@@ -6,6 +6,8 @@ import GlassButton from './GlassButton';
 import { Link } from 'react-router-dom';
 import MainAvatar from './Avatars';
 import { getLenis } from '../../lib/useLenis';
+import LeaveInterviewModal from './LeaveInterviewModal';
+
 
 const navLinks = [
   { label: 'Home', href: '#home' },
@@ -17,8 +19,10 @@ const navLinks = [
 interface NavbarProps {
   onReset: () => void;
   onStartAssessment?: () => void;
+  onLeaveInterview?: () => void;
   showLandingNav?: boolean;
   authDisabled?: boolean;
+  isInterviewActive?: boolean;
 }
 
 const Logo = () => (
@@ -31,10 +35,14 @@ const Logo = () => (
 export default function Navbar({
   onReset,
   onStartAssessment,
+  onLeaveInterview,
   showLandingNav = false,
   authDisabled,
+  isInterviewActive = false,
 }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+
   const [active, setActive] = useState('Home');
   const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -99,9 +107,22 @@ export default function Navbar({
       return;
     }
 
+    if (isInterviewActive) return;
+
     e.preventDefault();
     setIsMenuOpen(false);
     onReset();
+  };
+
+  const handleLeaveConfirm = () => {
+    setIsLeaveModalOpen(false);
+    
+    // Attempt to exit fullscreen
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    
+    onLeaveInterview?.();
   };
 
   const handleStartAssessment = () => {
@@ -122,14 +143,32 @@ export default function Navbar({
           className="px-4 py-3 sm:px-5 transition-all duration-300"
         >
           <div className="flex w-full items-center justify-between gap-4">
-            <a href="#home" onClick={handleLogoClick} className="flex items-center space-x-3 cursor-pointer select-none" aria-label="Go to home">
+            <a 
+              href="#home" 
+              onClick={handleLogoClick} 
+              className={`flex items-center space-x-3 select-none ${isInterviewActive ? 'cursor-default pointer-events-none' : 'cursor-pointer'}`}
+              aria-label="Go to home"
+            >
               <Logo />
               <span className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-[linear-gradient(135deg,#fff7ea_0%,#d9cfbf_48%,#e2cca0_100%)] tracking-tight whitespace-nowrap" style={{ fontFamily: 'Sora, Manrope, sans-serif' }}>
                 AceMock
               </span>
             </a>
 
-            {showLandingNav ? (
+            {isInterviewActive ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:block text-xs font-bold text-[color:var(--accent-gold-strong)] uppercase tracking-widest bg-white/5 py-2 px-4 rounded-full border border-white/5">
+                  Interview Locked-in
+                </div>
+                <GlassButton
+                  onClick={() => setIsLeaveModalOpen(true)}
+                  variant="secondary"
+                  className="rounded-full px-5 py-2.5 text-sm font-bold border-white/10 hover:bg-red-500/10 hover:text-red-400 !bg-opacity-10"
+                >
+                  Leave Interview
+                </GlassButton>
+              </div>
+            ) : showLandingNav ? (
               <>
                 <div className="hidden md:flex items-center gap-3 whitespace-nowrap">
                   <div className="liquid-pill flex items-center gap-1.5 px-2 py-1.5">
@@ -138,7 +177,7 @@ export default function Navbar({
                         key={link.label}
                         href={link.href}
                         onClick={(e) => handleNavClick(e, link.href, link.label)}
-                        className={`liquid-nav-link px-3 py-2 text-sm font-semibold lg:text-[0.95rem] transition-all duration-300 ${active === link.label ? 'bg-white/10 text-[color:var(--accent-gold-strong)] shadow-[0_0_15px_rgba(212,184,124,0.3)]' : 'liquid-copy hover:text-[color:var(--accent-gold-strong)]'
+                        className={`liquid-nav-link px-3 py-2 text-sm font-semibold lg:text-[0.95rem] transition-all duration-300 ${active === link.label ? 'bg-white/10 text-[color:var(--accent-gold-strong)] shadow-[0_0_15px_rgba(232,195,97,0.3)]' : 'liquid-copy hover:text-[color:var(--accent-gold-strong)]'
                           }`}
                       >
                         {link.label}
@@ -223,7 +262,7 @@ export default function Navbar({
                 key={link.label}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href, link.label)}
-                className={`rounded-full px-4 py-2 text-xl font-bold transition-colors ${active === link.label ? 'bg-white/10 text-[color:var(--accent-gold-strong)] shadow-[0_0_15px_rgba(212,184,124,0.3)]' : 'liquid-copy hover:text-[color:var(--accent-gold-strong)]'
+                className={`rounded-full px-4 py-2 text-xl font-bold transition-colors ${active === link.label ? 'bg-white/10 text-[color:var(--accent-gold-strong)] shadow-[0_0_15px_rgba(232,195,97,0.3)]' : 'liquid-copy hover:text-[color:var(--accent-gold-strong)]'
                   }`}
               >
                 {link.label}
@@ -260,6 +299,12 @@ export default function Navbar({
           </GlassSurface>
         </div>
       )}
+
+      <LeaveInterviewModal
+        isOpen={isLeaveModalOpen}
+        onClose={() => setIsLeaveModalOpen(false)}
+        onConfirm={handleLeaveConfirm}
+      />
     </header>
   );
 }

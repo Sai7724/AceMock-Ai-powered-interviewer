@@ -53,6 +53,13 @@ export interface CodingFeedback extends Feedback {
   efficiency: string;
 }
 
+export type HRQuestionCategory = 'behavioral' | 'situational' | 'motivational' | 'teamwork' | 'leadership';
+
+export interface HRQuestion {
+  question: string;
+  category: HRQuestionCategory;
+}
+
 export interface HRDetailedResult {
   question: string;
   response: string;

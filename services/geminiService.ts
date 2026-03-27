@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { SelfIntroductionFeedback, TechnicalQAFeedback, CodingFeedback, AptitudeQuestion, AptitudeFeedback, HRFeedback } from '../types';
+import { SelfIntroductionFeedback, TechnicalQAFeedback, CodingFeedback, AptitudeQuestion, AptitudeFeedback, HRFeedback, HRQuestionCategory } from '../types';
 
-type HRQuestionCategory = 'behavioral' | 'situational' | 'motivational' | 'teamwork' | 'leadership';
+
 
 function getApiKey(): string {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (import.meta.env.MODE === 'test' ? 'test-key' : '');

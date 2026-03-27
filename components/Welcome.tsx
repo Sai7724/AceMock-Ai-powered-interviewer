@@ -9,7 +9,6 @@ import { ArrowRight, Compass } from 'lucide-react';
 import { LightBulbIcon, CheckIcon, CodeBracketIcon, MicrophoneIcon, CpuChipIcon, ChartBarIcon, ClockIcon } from '../constants';
 import { Link } from 'react-router-dom';
 import Card from './common/Card';
-import GlassButton from './common/GlassButton';
 import ScrollReveal from './common/ScrollReveal';
 import { useAuth } from '../App';
 
@@ -132,8 +131,8 @@ function Hero({ onStart }: WelcomeProps) {
             animate="visible"
             className="inline-flex items-center gap-2 px-5 py-2 rounded-full border mb-10"
             style={{
-              borderColor: 'rgba(212,184,124,0.35)',
-              background: 'rgba(212,184,124,0.08)',
+              borderColor: 'rgba(232,195,97,0.35)',
+              background: 'rgba(232,195,97,0.08)',
               color: 'var(--accent-gold-strong)',
               fontFamily: 'Inter, sans-serif',
               fontSize: '0.7rem',
@@ -190,21 +189,19 @@ function Hero({ onStart }: WelcomeProps) {
             animate="visible"
             className="flex flex-col gap-5 w-full md:w-auto"
           >
-            <GlassButton
+            <button
               onClick={onStart}
-              className="liquid-button-primary rounded-full px-14 py-5 text-lg font-bold uppercase tracking-widest w-full md:w-auto"
+              className="liquid-button-primary inline-flex items-center justify-center rounded-full px-14 py-5 text-lg font-bold uppercase tracking-widest w-full md:w-auto"
             >
               Start Assessment <ArrowRight className="w-5 h-5 ml-1" />
-            </GlassButton>
+            </button>
             {!user && (
-              <GlassButton
-                as={Link}
+              <Link
                 to="/test-stages"
-                variant="secondary"
-                className="liquid-button-secondary inline-flex items-center justify-center rounded-full px-12 py-5 text-lg font-semibold w-full md:w-auto"
+                className="liquid-button-secondary inline-flex items-center justify-center rounded-full px-12 py-5 text-lg font-semibold w-full md:w-auto text-white"
               >
                 Explore Stages <Compass className="w-5 h-5 ml-1" />
-              </GlassButton>
+              </Link>
             )}
           </motion.div>
         </div>
@@ -273,9 +270,9 @@ function AceTutorSection() {
             and generates daily study documents. Plan, resource, track — everything in one place.
           </p>
           <div className="flex justify-center relative z-10">
-            <GlassButton variant="secondary" as={Link} to="/acetutor" className="rounded-full px-10 py-4 text-lg font-bold liquid-button-secondary">
+            <Link to="/acetutor" className="liquid-button-secondary rounded-full px-10 py-4 text-lg font-bold inline-flex items-center justify-center text-white">
               Go to AceTutor →
-            </GlassButton>
+            </Link>
           </div>
         </div>
       </ScrollReveal>
@@ -318,13 +315,13 @@ const HowItWorks = () => {
             variants={rm ? {} : i % 2 === 0 ? fadeSlideIn : fadeSlideRight}
           >
             <div
-              className="h-full p-8 border border-white/5 group hover:border-[rgba(212,184,124,0.2)] transition-all duration-500 rounded-[28px] liquid-panel"
+              className="h-full p-8 border border-white/5 group hover:border-[rgba(232,195,97,0.2)] transition-all duration-500 rounded-[28px] liquid-panel"
             >
               {/* Icon */}
               <ScrollReveal direction="scale" delay={i * 0.06} margin="-40px">
                 <div
-                  className="mb-6 flex items-center justify-center h-16 w-16 rounded-2xl border border-white/10 group-hover:scale-110 group-hover:border-[rgba(212,184,124,0.3)] transition-all duration-500"
-                  style={{ background: 'rgba(212,184,124,0.07)', color: 'var(--accent-gold-strong)' }}
+                  className="mb-6 flex items-center justify-center h-16 w-16 rounded-2xl border border-white/10 group-hover:scale-110 group-hover:border-[rgba(232,195,97,0.3)] transition-all duration-500"
+                  style={{ background: 'rgba(232,195,97,0.07)', color: 'var(--accent-gold-strong)' }}
                 >
                   {step.icon}
                 </div>
@@ -438,7 +435,7 @@ const ProjectInfo = () => {
               <ScrollReveal direction="scale" delay={i * 0.08} margin="-40px">
                 <div
                   className="mb-5 flex items-center justify-center h-16 w-16 rounded-2xl border border-white/10"
-                  style={{ background: 'rgba(212,184,124,0.08)', color: 'var(--accent-gold-strong)' }}
+                  style={{ background: 'rgba(232,195,97,0.08)', color: 'var(--accent-gold-strong)' }}
                 >
                   {card.icon}
                 </div>
@@ -490,7 +487,7 @@ const DevTeam = () => {
                 <img
                   src={m.avatar}
                   alt={m.name}
-                  className="w-24 h-24 rounded-full mb-5 ring-2 ring-[rgba(212,184,124,0.4)] ring-offset-2 ring-offset-transparent"
+                  className="w-24 h-24 rounded-full mb-5 ring-2 ring-[rgba(232,195,97,0.4)] ring-offset-2 ring-offset-transparent"
                 />
               </ScrollReveal>
               <h4
@@ -541,14 +538,13 @@ const FinalCTA = ({ onStart }: { onStart: () => void }) => {
               </p>
             </ScrollReveal>
             <ScrollReveal direction="scale" delay={0.2} margin="-40px" className="flex justify-center">
-              <GlassButton
-                variant="secondary"
+              <button
                 onClick={onStart}
-                className="rounded-full px-14 py-5 text-lg font-bold uppercase tracking-wider liquid-button-primary"
-                style={{ '--btn-text': '#ffffff' } as React.CSSProperties}
+                className="liquid-button-primary rounded-full px-14 py-5 text-lg font-bold uppercase tracking-wider"
+                style={{ color: '#ffffff' }}
               >
                 Begin Your Assessment <ArrowRight className="w-5 h-5 ml-1" />
-              </GlassButton>
+              </button>
             </ScrollReveal>
           </div>
         </div>

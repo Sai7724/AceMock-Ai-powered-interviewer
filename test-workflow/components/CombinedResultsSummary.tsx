@@ -29,7 +29,7 @@ export default function CombinedResultsSummary({
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="liquid-kicker">Combined Results</p>
+          <p className="liquid-kicker text-[color:var(--accent-gold-strong)]">Combined Results</p>
           <h1 className="liquid-heading mt-3 text-4xl font-extrabold">Stage Results Summary</h1>
           <p className="liquid-copy mt-4 max-w-3xl text-lg">
             This summary combines every stage you have tested in the isolated workflow so you can validate the feedback system before running the full interview.
@@ -61,7 +61,7 @@ export default function CombinedResultsSummary({
         <>
           <Card className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="liquid-kicker">Overall</p>
+              <p className="liquid-kicker text-[color:var(--accent-gold-strong)]">Overall</p>
               <h2 className="liquid-heading mt-3 text-3xl font-bold">Testing Workflow Aggregate</h2>
               <p className="liquid-muted mt-2">
                 Included stages: {completedStages.map((stage) => stage.shortLabel).join(', ')}

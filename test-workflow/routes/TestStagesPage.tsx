@@ -26,7 +26,8 @@ import HRRoundStage from '../stages/HRRoundStage';
 import SelfIntroductionStage from '../stages/SelfIntroductionStage';
 import TechnicalRoundStage from '../stages/TechnicalRoundStage';
 import GlassButton from '../../components/common/GlassButton';
-import GlassSurface from '../../components/common/GlassSurface';
+import Navbar from '../../components/common/Header';
+
 
 type ViewMode = 'grid' | 'stage' | 'feedback' | 'summary';
 
@@ -119,7 +120,13 @@ export default function TestStagesPage() {
 
   return (
     <div className="liquid-page min-h-screen px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-7xl">
+      <Navbar 
+        onReset={handleClearResults}
+        onLeaveInterview={handleClearResults}
+        isInterviewActive={viewMode === 'stage'}
+      />
+      <div className="mx-auto w-full max-w-7xl mt-20">
+
         {viewMode === 'grid' && (
           <TestStageGrid
             stages={TEST_STAGE_DEFINITIONS}
@@ -141,7 +148,7 @@ export default function TestStagesPage() {
           <div className="space-y-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="liquid-kicker">Stage Runner</p>
+                <p className="liquid-kicker text-[color:var(--accent-gold-strong)]">Stage Runner</p>
                 <h1 className="liquid-heading mt-3 text-4xl font-extrabold">{activeStage.label}</h1>
                 <p className="liquid-copy mt-4 max-w-3xl text-lg">{activeStage.description}</p>
               </div>
@@ -149,7 +156,8 @@ export default function TestStagesPage() {
                 <GlassButton
                   variant="secondary"
                   onClick={() => setViewMode('grid')}
-                  className="rounded-full px-5 py-3 text-sm font-semibold"
+                  disabled={viewMode === 'stage'}
+                  className="rounded-full px-5 py-3 text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   Back to Stages
                 </GlassButton>
@@ -164,17 +172,11 @@ export default function TestStagesPage() {
               </div>
             </div>
 
-            <GlassSurface
-              width="100%"
-              height="auto"
-              borderRadius={32}
-              blur={16}
-              opacity={0.8}
-              backgroundOpacity={0.06}
-              className="p-6"
+            <div
+              className="w-full h-auto p-6 md:p-8 rounded-[32px] bg-[#0a0d14]/60 backdrop-blur-2xl border border-white/10 shadow-2xl"
             >
               {renderStageRunner()}
-            </GlassSurface>
+            </div>
           </div>
         )}
 
@@ -182,7 +184,7 @@ export default function TestStagesPage() {
           <div className="space-y-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="liquid-kicker">Instant Feedback</p>
+                <p className="liquid-kicker text-[color:var(--accent-gold-strong)]">Instant Feedback</p>
                 <h1 className="liquid-heading mt-3 text-4xl font-extrabold">{activeStage.label}</h1>
                 <p className="liquid-copy mt-4 max-w-3xl text-lg">
                   The stage has been evaluated independently using the same analysis services used in the main interview workflow.

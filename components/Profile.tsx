@@ -505,7 +505,7 @@ export default function Profile({ onReturnToHome }: ProfileProps) {
               onClick={() => setActiveTab(tab)}
               className={`px-8 py-3 rounded-[18px] text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 ${
                 activeTab === tab 
-                  ? 'bg-[color:var(--accent-gold-strong)] text-slate-950 shadow-[0_0_15px_rgba(212,184,124,0.3)]' 
+                  ? 'bg-[color:var(--accent-gold-strong)] text-slate-950 shadow-[0_0_15px_rgba(232,195,97,0.3)]' 
                   : 'text-slate-400 hover:text-[color:var(--accent-gold-strong)] hover:bg-white/5'
               }`}
             >

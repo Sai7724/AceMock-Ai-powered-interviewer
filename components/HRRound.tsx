@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { generateHRQuestions, evaluateHRResponse } from '../services/geminiService';
 import { HRFeedback, HRQuestion } from '../types';
 import Spinner from './common/Spinner';
-import Card from './common/Card';
-import GlassButton from './common/GlassButton';
-import GlassSurface from './common/GlassSurface';
+// import GlassButton from './common/GlassButton';
+// import GlassSurface from './common/GlassSurface';
 
 interface HRRoundProps {
   onComplete: (feedback: HRFeedback) => void;
@@ -171,30 +170,25 @@ const HRRound = ({ onComplete }: HRRoundProps) => {
   if (!hasStarted) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-12 animate-fade-in">
-        <GlassSurface
-           width="100%"
-           height="auto"
-           borderRadius={32}
-           blur={16}
-           opacity={0.8}
-           backgroundOpacity={0.06}
-           className="p-10 text-center"
+        <div
+           className="p-10 text-center liquid-panel w-full"
+           style={{ borderRadius: '32px' }}
         >
-          <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-indigo-300">
-            Stage 5
+          <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-300">
+            Stage 6
           </div>
           <h2 className="liquid-heading mb-4 text-4xl font-extrabold">HR Round</h2>
           <p className="liquid-copy mb-8 text-lg text-slate-300">
-            The Final Stage. This round assesses your communication, self-awareness, and cultural fit. Be prepared for behavioral and situational questions.
+            Final round: Cultural fit and behavioral questions. Be authentic and provide specific examples. You will be asked 5 questions.
           </p>
-          <GlassButton
+          <button
             onClick={startRound}
-            className="w-full rounded-full py-4 text-xl font-bold bg-[linear-gradient(135deg,var(--accent-blue-strong),var(--accent-blue))] shadow-2xl shadow-blue-500/20"
+            className="liquid-button-primary w-full rounded-full py-4 text-xl font-bold shadow-2xl shadow-blue-500/20"
           >
-            Start HR Interview
-          </GlassButton>
+            Start HR Round
+          </button>
           {error && <p className="mt-4 text-rose-300 text-sm">{error}</p>}
-        </GlassSurface>
+        </div>
       </div>
     );
   }
@@ -202,18 +196,13 @@ const HRRound = ({ onComplete }: HRRoundProps) => {
   return (
     <div className="mx-auto max-w-4xl space-y-8 animate-fade-in px-4">
       <div className="text-center">
-        <GlassSurface
-          width="100%"
-          height="auto"
-          borderRadius={32}
-          blur={16}
-          opacity={0.8}
-          backgroundOpacity={0.06}
-          className="text-center p-8 mb-6"
+        <div
+          className="text-center p-8 mb-6 liquid-panel w-full"
+          style={{ borderRadius: '32px' }}
         >
-          <p className="liquid-kicker">Stage 5</p>
+          <p className="liquid-kicker">Stage 6</p>
           <h1 className="liquid-heading mt-3 text-4xl font-extrabold tracking-tight">HR Round</h1>
-        </GlassSurface>
+        </div>
         
         <p className="liquid-copy mt-6 max-w-2xl mx-auto">
           Assess communication, judgment, self-awareness, and culture fit under a timed response format.
@@ -226,29 +215,19 @@ const HRRound = ({ onComplete }: HRRoundProps) => {
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
             <span className="liquid-copy font-semibold text-lg">Question {currentQuestionIndex + 1} of {questions.length}</span>
-            <GlassSurface
-              width="auto"
-              height="auto"
-              borderRadius={20}
-              blur={10}
-              opacity={0.5}
-              backgroundOpacity={0.1}
-              className={`px-4 py-1.5 font-mono font-bold ${timeLeft <= 30 ? 'text-rose-400' : 'text-blue-400'}`}
+            <div
+              className={`px-4 py-1.5 font-mono font-bold liquid-panel-sm ${timeLeft <= 30 ? 'text-rose-400' : 'text-blue-400'}`}
+              style={{ borderRadius: '20px' }}
             >
               Time Left: {formatTime(timeLeft)}
-            </GlassSurface>
+            </div>
           </div>
         </div>
       </div>
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={20}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="p-8 sm:p-10"
+      <div
+        className="p-8 sm:p-10 liquid-panel w-full"
+        style={{ borderRadius: '32px' }}
       >
         <div className="space-y-8">
           <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
@@ -268,15 +247,14 @@ const HRRound = ({ onComplete }: HRRoundProps) => {
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h4 className="liquid-heading text-lg font-semibold">Your Response</h4>
-              <GlassButton
-                variant={isRecording ? "primary" : "secondary"}
+              <button
                 onClick={isRecording ? stopRecording : startRecording}
                 className={isRecording
                   ? '!bg-rose-500/90 rounded-full px-6 py-2.5 font-bold text-white shadow-xl shadow-rose-500/20 active:scale-95 transition-all'
-                  : 'rounded-full px-6 py-2.5 font-bold transition-all'}
+                  : 'liquid-button-secondary rounded-full px-6 py-2.5 font-bold transition-all'}
               >
                 {isRecording ? 'Stop Recording' : 'Start Recording'}
-              </GlassButton>
+              </button>
             </div>
 
             <textarea
@@ -306,25 +284,20 @@ const HRRound = ({ onComplete }: HRRoundProps) => {
               Clear Response
             </button>
 
-            <GlassButton
+            <button
               onClick={() => void handleNextQuestion()}
               disabled={!currentResponse.trim() && !isTimeUp}
-              className="rounded-full px-10 py-3.5 font-bold text-lg disabled:cursor-not-allowed disabled:opacity-30 transition-all shadow-2xl shadow-blue-500/10"
+              className="liquid-button-primary rounded-full px-10 py-3.5 font-bold text-lg disabled:cursor-not-allowed disabled:opacity-30 transition-all shadow-2xl shadow-blue-500/10"
             >
               {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Review & Finish'}
-            </GlassButton>
+            </button>
           </div>
         </div>
-      </GlassSurface>
+      </div>
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={10}
-        opacity={0.6}
-        backgroundOpacity={0.04}
-        className="p-8"
+      <div
+        className="p-8 liquid-panel w-full"
+        style={{ borderRadius: '32px' }}
       >
         <h4 className="liquid-heading mb-4 text-xl font-bold flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-blue-400"></span>
@@ -348,7 +321,7 @@ const HRRound = ({ onComplete }: HRRoundProps) => {
             Explain how you think, not just outcomes.
           </li>
         </ul>
-      </GlassSurface>
+      </div>
     </div>
   );
 };

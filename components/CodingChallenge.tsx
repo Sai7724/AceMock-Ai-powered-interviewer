@@ -3,8 +3,8 @@ import { generateCodingChallenge, evaluateCode } from '../services/geminiService
 import { CodingFeedback } from '../types';
 import Spinner from './common/Spinner';
 import { getRunnerInfo, runCode } from '../services/codeRunner';
-import GlassButton from './common/GlassButton';
-import GlassSurface from './common/GlassSurface';
+// import GlassButton from './common/GlassButton';
+// import GlassSurface from './common/GlassSurface';
 
 interface CodingChallengeProps {
   onComplete: (feedback: CodingFeedback) => void;
@@ -23,10 +23,15 @@ export default function CodingChallenge({ onComplete, language }: CodingChalleng
   const [runResult, setRunResult] = useState<string>('');
   const [runError, setRunError] = useState<string>('');
   const [isRunning, setIsRunning] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const runner = useMemo(() => getRunnerInfo(language), [language]);
   const isRunnerAvailable = runner.isAvailable;
   const usesBrowserRunner = runner.mode === 'browser';
+
+  const startChallenge = () => {
+    setHasStarted(true);
+  };
 
   useEffect(() => {
     async function fetchChallenge() {
@@ -47,7 +52,7 @@ export default function CodingChallenge({ onComplete, language }: CodingChalleng
   }, [language]);
 
   function stripCodeFences(src: string): string {
-    const fenceMatch = src.match(/^```[a-zA-Z0-9]*\n([\s\S]*?)\n```$/);
+    const fenceMatch = src.match(/^`{3}[a-zA-Z0-9]*\n([\s\S]*?)\n`{3}$/);
     if (fenceMatch) return fenceMatch[1];
     return src;
   }
@@ -175,35 +180,50 @@ export default function CodingChallenge({ onComplete, language }: CodingChalleng
     return <p className="text-center text-rose-300">{error || 'Could not load challenge.'}</p>;
   }
 
+  if (!hasStarted) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-12 animate-fade-in">
+        <div
+           className="p-10 text-center liquid-panel w-full"
+           style={{ borderRadius: '32px' }}
+        >
+          <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-300">
+            Stage 5
+          </div>
+          <h2 className="liquid-heading mb-4 text-4xl font-extrabold">Coding Challenge</h2>
+          <p className="liquid-copy mb-8 text-lg text-slate-300">
+            Apply your problem-solving skills to a real-world scenario in <span className="font-bold text-blue-400">{language}</span>. You will be given one challenge to solve.
+          </p>
+          <button
+            onClick={startChallenge}
+            className="liquid-button-primary w-full rounded-full py-4 text-xl font-bold shadow-2xl shadow-blue-500/20"
+          >
+            Start Coding Round
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col items-center animate-fade-in font-sans">
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="text-center p-6 mb-8"
+      <div
+        className="text-center p-6 mb-8 liquid-panel"
+        style={{ borderRadius: '32px' }}
       >
         <p className="liquid-kicker">Stage 3</p>
         <h2 className="liquid-heading mt-3 text-3xl font-extrabold sm:text-4xl tracking-tight">
           Coding Challenge
         </h2>
-      </GlassSurface>
+      </div>
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="mb-10 p-8 sm:p-10 lg:p-12"
+      <div
+        className="mb-10 p-8 sm:p-10 lg:p-12 liquid-panel"
+        style={{ borderRadius: '32px' }}
       >
         <h3 className="liquid-heading mb-5 text-3xl font-bold">{challenge.title}</h3>
         <p className="liquid-copy whitespace-pre-wrap text-lg leading-relaxed sm:text-xl">{challenge.description}</p>
-      </GlassSurface>
+      </div>
 
       <div className="mb-6 w-full">
         <label className="block text-sm font-semibold uppercase tracking-[0.18em] text-[color:var(--text-muted)]">
@@ -224,14 +244,9 @@ export default function CodingChallenge({ onComplete, language }: CodingChalleng
       {error && <p className="mt-6 text-rose-300">{error}</p>}
 
       <div className="mt-10 grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
-        <GlassSurface
-          width="100%"
-          height="auto"
-          borderRadius={32}
-          blur={16}
-          opacity={0.8}
-          backgroundOpacity={0.06}
-          className="p-6"
+        <div
+          className="p-6 liquid-panel w-full"
+          style={{ borderRadius: '32px' }}
         >
           <div className="mb-4 flex items-center justify-between gap-3">
             <h4 className="liquid-heading text-lg font-semibold">Run Console</h4>
@@ -264,31 +279,25 @@ export default function CodingChallenge({ onComplete, language }: CodingChalleng
             disabled={!isRunnerAvailable}
           />
           <div className="mt-4 flex items-center gap-3">
-            <GlassButton
-              variant="secondary"
+            <button
               type="button"
               onClick={handleRun}
               disabled={!isRunnerAvailable || isRunning}
-              className="rounded-full px-5 py-2.5 font-bold disabled:cursor-not-allowed disabled:opacity-50"
+              className="liquid-button-secondary rounded-full px-5 py-2.5 font-bold disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isRunning ? 'Running...' : 'Run'}
-            </GlassButton>
+            </button>
             {!!runResult && expectedText && (
-              <span className={`text-sm font-semibold ${runResult.trim() === expectedText.trim() ? 'text-[color:var(--success)]' : 'text-[color:var(--danger)]'}`}>
+              <span className={`text-sm font-semibold ${runResult.trim() === expectedText.trim() ? 'text-green-400' : 'text-rose-400'}`}>
                 {runResult.trim() === expectedText.trim() ? 'Output matches expected' : 'Output does not match expected'}
               </span>
             )}
           </div>
-        </GlassSurface>
+        </div>
 
-        <GlassSurface
-          width="100%"
-          height="auto"
-          borderRadius={32}
-          blur={16}
-          opacity={0.8}
-          backgroundOpacity={0.06}
-          className="p-6"
+        <div
+          className="p-6 liquid-panel w-full"
+          style={{ borderRadius: '32px' }}
         >
           <h4 className="liquid-heading mb-4 text-lg font-semibold">Program Output</h4>
           <div className="liquid-muted mb-2 text-xs">Console</div>
@@ -304,9 +313,9 @@ export default function CodingChallenge({ onComplete, language }: CodingChalleng
             {runResult || <span className="text-white/30">(no result)</span>}
           </div>
           {runError && (
-            <div className="mt-3 text-sm text-[color:var(--danger)]">Error: {runError}</div>
+            <div className="mt-3 text-sm text-rose-400">Error: {runError}</div>
           )}
-        </GlassSurface>
+        </div>
       </div>
 
       {usesBrowserRunner && (
@@ -320,13 +329,13 @@ export default function CodingChallenge({ onComplete, language }: CodingChalleng
       )}
 
       <div className="mt-10">
-        <GlassButton
+        <button
           onClick={handleSubmit}
           disabled={isSubmitting || !code.trim()}
-          className="rounded-full px-12 py-4 text-xl font-bold disabled:cursor-not-allowed disabled:opacity-50"
+          className="liquid-button-primary rounded-full px-12 py-4 text-xl font-bold disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? <Spinner /> : 'Submit Code'}
-        </GlassButton>
+        </button>
       </div>
     </div>
   );

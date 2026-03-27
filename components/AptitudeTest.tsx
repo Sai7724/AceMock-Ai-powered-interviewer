@@ -3,8 +3,8 @@ import { generateAptitudeQuestions, evaluateAptitudePerformance } from '../servi
 import { AptitudeFeedback, AptitudeQuestion } from '../types';
 import Spinner from './common/Spinner';
 import Card from './common/Card';
-import GlassButton from './common/GlassButton';
-import GlassSurface from './common/GlassSurface';
+// import GlassButton from './common/GlassButton';
+// import GlassSurface from './common/GlassSurface';
 import { ClockIcon, CalculatorIcon } from '../constants';
 
 const NUM_QUESTIONS = 5;
@@ -36,15 +36,10 @@ const Calculator = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xl" onClick={onClose}>
-      <GlassSurface
+      <div
         onClick={(e) => e.stopPropagation()}
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="w-full max-w-sm p-8 shadow-2xl"
+        className="liquid-panel w-full max-w-sm p-8 shadow-2xl"
+        style={{ borderRadius: '32px' }}
       >
         <h3 className="liquid-heading mb-4 text-lg font-bold">Calculator</h3>
       <textarea
@@ -57,10 +52,10 @@ const Calculator = ({ onClose }: { onClose: () => void }) => {
       <div className="liquid-panel-soft mt-3 min-h-[44px] rounded-2xl p-3 text-right text-2xl font-bold text-[color:var(--text-primary)]">
         {result}
       </div>
-      <GlassButton variant="secondary" onClick={onClose} className="mt-4 w-full rounded-full py-3 font-bold">
+      <button onClick={onClose} className="liquid-button-secondary mt-4 w-full rounded-full py-3 font-bold">
         Close Calculator
-      </GlassButton>
-      </GlassSurface>
+      </button>
+      </div>
     </div>
   );
 };
@@ -152,14 +147,9 @@ export default function AptitudeTest({ onComplete }: { onComplete: (feedback: Ap
   if (!hasStarted) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-12 animate-fade-in">
-        <GlassSurface
-           width="100%"
-           height="auto"
-           borderRadius={32}
-           blur={16}
-           opacity={0.8}
-           backgroundOpacity={0.06}
-           className="p-10 text-center"
+        <div
+          className="p-10 text-center liquid-panel w-full"
+          style={{ borderRadius: '32px' }}
         >
           <div className="liquid-pill mx-auto mb-6 w-fit px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-300">
             Phase 3
@@ -178,14 +168,14 @@ export default function AptitudeTest({ onComplete }: { onComplete: (feedback: Ap
               <p className="text-xl font-bold text-white">7:30 mins</p>
             </div>
           </div>
-          <GlassButton
+          <button
             onClick={startAssessment}
-            className="w-full rounded-full py-4 text-xl font-bold shadow-2xl shadow-blue-500/20"
+            className="liquid-button-primary w-full rounded-full py-4 text-xl font-bold shadow-2xl shadow-blue-500/20"
           >
             Start Assessment
-          </GlassButton>
+          </button>
           {error && <p className="mt-4 text-rose-300 text-sm">{error}</p>}
-        </GlassSurface>
+        </div>
       </div>
     );
   }
@@ -225,23 +215,18 @@ export default function AptitudeTest({ onComplete }: { onComplete: (feedback: Ap
     <div className="mx-auto w-full max-w-5xl animate-fade-in">
       {showCalculator && <Calculator onClose={() => setShowCalculator(false)} />}
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="mb-6 p-6 flex flex-wrap items-center justify-between gap-4"
+      <div
+        className="mb-6 p-6 flex flex-wrap items-center justify-between gap-4 liquid-panel"
+        style={{ borderRadius: '32px' }}
       >
         <div>
           <p className="liquid-kicker">Stage 3</p>
           <h2 className="liquid-heading mt-3 text-3xl font-extrabold">Aptitude Round</h2>
         </div>
         <div className="flex items-center gap-4">
-          <GlassButton variant="secondary" onClick={() => setShowCalculator(true)} title="Open Calculator" className="rounded-full p-3 transition-colors">
+          <button onClick={() => setShowCalculator(true)} title="Open Calculator" className="liquid-button-secondary rounded-full p-3 transition-colors">
             <CalculatorIcon className="h-5 w-5" />
-          </GlassButton>
+          </button>
           <div className="liquid-pill flex items-center gap-2 px-4 py-2">
             <ClockIcon className="h-5 w-5 text-[color:var(--accent-blue-strong)]" />
             <span className="font-mono text-xl font-bold tabular-nums text-[color:var(--text-primary)]">
@@ -249,22 +234,17 @@ export default function AptitudeTest({ onComplete }: { onComplete: (feedback: Ap
             </span>
           </div>
         </div>
-      </GlassSurface>
+      </div>
 
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={32}
-        blur={16}
-        opacity={0.8}
-        backgroundOpacity={0.06}
-        className="mb-6 p-6"
+      <div
+        className="mb-6 p-6 liquid-panel"
+        style={{ borderRadius: '32px' }}
       >
         <p className="liquid-copy mb-3 text-sm uppercase tracking-[0.16em]">
           Question {currentQuestionIndex + 1} of {questions.length}
         </p>
         <p className="liquid-heading text-2xl font-bold">{currentQuestion.question}</p>
-      </GlassSurface>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         {currentQuestion.options.map((option, index) => {
@@ -291,13 +271,13 @@ export default function AptitudeTest({ onComplete }: { onComplete: (feedback: Ap
       </div>
 
       <div className="text-center">
-        <GlassButton
+        <button
           onClick={handleNext}
           disabled={!userAnswers[currentQuestionIndex] || isSubmitting}
-          className="rounded-full px-8 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-50"
+          className="liquid-button-primary rounded-full px-8 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-50"
         >
           {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish & Submit'}
-        </GlassButton>
+        </button>
       </div>
     </div>
   );

@@ -28,18 +28,19 @@ export default function CodingRoundStage({
 
   return (
     <div className="space-y-6">
-      <div className="liquid-banner border border-[color:var(--accent-blue-strong)]/20 px-5 py-4">
+      <div className="liquid-banner border border-[color:var(--accent-gold-strong)]/20 px-5 py-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="liquid-kicker">Coding Test</p>
+            <p className="liquid-kicker text-[color:var(--accent-gold-strong)]">Coding Test</p>
             <p className="liquid-copy mt-2">
-              Current language/track: <span className="liquid-accent font-semibold">{language}</span>
+              Current language/track: <span className="liquid-accent text-[color:var(--accent-gold-strong)] font-semibold">{language}</span>
             </p>
           </div>
           <GlassButton
             variant="secondary"
             onClick={() => setLanguage('')}
-            className="rounded-full px-5 py-3 text-sm font-semibold"
+            disabled={!!language} 
+            className="rounded-full px-5 py-3 text-sm font-semibold opacity-0 pointer-events-none"
           >
             Change Selection
           </GlassButton>

@@ -17,26 +17,26 @@
   --glass-blur: 32px;
 
   /* 10% Cyan Glow Accents - Retained for some parts, but we'll prioritize Gold/Blue */
-  --accent-primary: #D4B87C;
-  --accent-primary-dim: #F1D7A4;
+  --accent-primary: #E8C361;
+  --accent-primary-dim: #FBE3A1;
   --accent-secondary: #7FB5FF;
 
   /* Typography - Clean and premium */
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
-  --text-accent: #D4B87C;
+  --text-accent: #E8C361;
 
   /* Corner Radii - Editorial modern */
   --radius-lg: 1.5rem;
   --radius-xl: 3rem;
 
   /* Glow Shadows */
-  --glow-soft: 0 0 15px rgba(212, 184, 124, 0.15);
-  --glow-strong: 0 0 25px rgba(212, 184, 124, 0.3);
+  --glow-soft: 0 0 15px rgba(232, 195, 97, 0.15);
+  --glow-strong: 0 0 25px rgba(232, 195, 97, 0.3);
 
   /* Gold - primary CTA */
-  --accent-violet: #D4B87C;
-  --accent-violet-light: #F1D7A4;
+  --accent-violet: #E8C361;
+  --accent-violet-light: #FBE3A1;
 
   /* Soft Blue — secondary/supporting */
   --accent-blue: #7FB5FF;
@@ -211,7 +211,7 @@ body {
   background: linear-gradient(135deg, var(--accent-violet), var(--accent-violet-light));
   color: #1a1a1a;
   border: 1px solid rgba(241, 215, 164, 0.4);
-  box-shadow: 0 0 15px rgba(212, 184, 124, 0.3);
+  box-shadow: 0 0 15px rgba(232, 195, 97, 0.3);
   min-height: 48px;
   min-width: 48px;
   padding: 0.875rem 1.75rem;
@@ -221,7 +221,7 @@ body {
 
 .liquid-button-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 25px rgba(212, 184, 124, 0.5);
+  box-shadow: 0 0 25px rgba(232, 195, 97, 0.5);
 }
 
 .liquid-button-primary:active {
@@ -777,18 +777,18 @@ body {
 }
 
 .liquid-button-primary.glass-surface {
-  background: linear-gradient(135deg, #FFD700, #F1D7A4) !important;
-  color: var(--btn-text, #000000) !important;
-  font-weight: 900 !important;
-  border: 1px solid rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 0 10px 40px -5px rgba(255, 215, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+  background: linear-gradient(135deg, var(--accent-violet), var(--accent-violet-light)) !important;
+  color: #1a1a1a !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(241, 215, 164, 0.4) !important;
+  box-shadow: 0 10px 40px -5px rgba(232, 195, 97, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.2) !important;
   text-shadow: none !important;
 }
 
 .liquid-button-primary.glass-surface:hover {
-  transform: translateY(-5px) scale(1.03);
-  box-shadow: 0 25px 50px -10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4);
-  background: linear-gradient(135deg, #FFFDE0, #FFD700) !important;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 20px 40px -10px rgba(232, 195, 97, 0.5), 0 0 20px rgba(232, 195, 97, 0.3);
+  background: linear-gradient(135deg, var(--accent-violet-light), var(--accent-violet)) !important;
 }
 
 .liquid-button-secondary.glass-surface {
