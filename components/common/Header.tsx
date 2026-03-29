@@ -242,60 +242,55 @@ export default function Navbar({
           <GlassSurface
             width="100%"
             height="auto"
-            borderRadius={32}
+            borderRadius={24}
             blur={20}
             opacity={0.9}
             backgroundOpacity={0.1}
-            className="flex flex-col items-center py-8 space-y-6 relative"
+            className="flex flex-col relative"
           >
-            <GlassButton
-              variant="secondary"
-              className="absolute top-4 right-4 rounded-full p-2 md:hidden"
-              aria-label="Close menu"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <XMarkIcon className="w-7 h-7" />
-            </GlassButton>
+            <div className="flex flex-col px-6 py-8 space-y-6 w-full">
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(e, link.href, link.label)}
+                  className={`text-xl font-bold transition-colors ${active === link.label ? 'text-[color:var(--accent-gold-strong)]' : 'text-slate-200 hover:text-[color:var(--accent-gold-strong)]'
+                    }`}
+                >
+                  {link.label}
+                </a>
+              ))}
 
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={(e) => handleNavClick(e, link.href, link.label)}
-                className={`rounded-full px-4 py-2 text-xl font-bold transition-colors ${active === link.label ? 'bg-white/10 text-[color:var(--accent-gold-strong)] shadow-[0_0_15px_rgba(232,195,97,0.3)]' : 'liquid-copy hover:text-[color:var(--accent-gold-strong)]'
-                  }`}
-              >
-                {link.label}
-              </a>
-            ))}
+              <div className="pt-4 flex flex-col space-y-4 w-full">
+                {!user && (
+                  <GlassButton
+                    onClick={handleStartAssessment}
+                    className="w-full rounded-full px-6 py-3 text-lg font-extrabold uppercase tracking-[0.1em]"
+                  >
+                    Start Assessment
+                  </GlassButton>
+                )}
 
-            {!user && (
-              <GlassButton
-                onClick={handleStartAssessment}
-                className="w-[calc(100%-3rem)] rounded-full px-8 py-3 text-lg font-extrabold uppercase tracking-[0.16em]"
-              >
-                Start Assessment
-              </GlassButton>
-            )}
-
-            {!authDisabled && (
-              user ? (
-                <GlassButton as={Link} to="/profile" variant="secondary" onClick={() => setIsMenuOpen(false)} className="w-[calc(100%-3rem)] rounded-full pl-1.5 pr-4 py-1.5 text-base font-bold flex items-center justify-center gap-2">
-                  <div className="w-8 h-8 rounded-full border border-white/10 overflow-hidden shadow-md">
-                    <MainAvatar
-                      seed={user.id}
-                      name={user?.user_metadata?.username || user?.email || 'User'}
-                      size="100%"
-                    />
-                  </div>
-                  My Profile
-                </GlassButton>
-              ) : (
-                <GlassButton as={Link} to="/login" variant="secondary" onClick={() => setIsMenuOpen(false)} className="rounded-full px-4 py-3 text-sm font-semibold">
-                  Login
-                </GlassButton>
-              )
-            )}
+                {!authDisabled && (
+                  user ? (
+                    <GlassButton as={Link} to="/profile" variant="secondary" onClick={() => setIsMenuOpen(false)} className="w-full rounded-full pl-2 pr-4 py-2 text-base font-bold flex items-center justify-center gap-2">
+                      <div className="w-8 h-8 rounded-full border border-white/10 overflow-hidden shadow-md">
+                        <MainAvatar
+                          seed={user.id}
+                          name={user?.user_metadata?.username || user?.email || 'User'}
+                          size="100%"
+                        />
+                      </div>
+                      My Profile
+                    </GlassButton>
+                  ) : (
+                    <GlassButton as={Link} to="/login" variant="secondary" onClick={() => setIsMenuOpen(false)} className="w-full rounded-full px-4 py-3 text-lg font-semibold text-center">
+                      Login
+                    </GlassButton>
+                  )
+                )}
+              </div>
+            </div>
           </GlassSurface>
         </div>
       )}

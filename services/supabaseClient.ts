@@ -20,7 +20,11 @@ function createBrowserSupabaseClient(config: SupabaseBrowserConfig, label: strin
     throw new Error(`Missing ${label} Supabase browser configuration.`);
   }
 
-  return createClient(config.url, config.key);
+  return createClient(config.url, config.key, {
+    auth: {
+      storageKey: `sb-${label}-auth-token`,
+    },
+  });
 }
 
 export const supabase = createBrowserSupabaseClient(primaryConfig, 'primary');
