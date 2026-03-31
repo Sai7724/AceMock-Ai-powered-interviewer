@@ -6,24 +6,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── Language name → Piston runtime name ─────────────────────────────────────
-// Piston uses different identifiers than our internal names.
-// Full list: https://emkc.org/api/v2/piston/runtimes
-const PISTON_LANGUAGE_MAP = {
-  javascript: 'javascript',
-  typescript: 'typescript',
-  python:     'python',
-  java:       'java',
-  cpp:        'c++',
-  csharp:     'csharp',
-  go:         'go',
-  rust:       'rust',
-  php:        'php',
-  ruby:       'ruby',
-  kotlin:     'kotlin',
-  swift:      'swift',
-};
-
 // ─── CORS for the proxy route ─────────────────────────────────────────────────
 app.use('/api/code-runner', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -35,41 +17,47 @@ app.use('/api/code-runner', (req, res, next) => {
 
 app.use(express.json());
 
-// ─── Piston proxy ─────────────────────────────────────────────────────────────
-// Piston is a free, open-source code execution engine with no API key required.
-// Docs: https://github.com/engineer-man/piston
+// ─── OneCompiler proxy ────────────────────────────────────────────────────────
 app.post('/api/code-runner', async (req, res) => {
-  const { language, stdin = '', files = [] } = req.body ?? {};
-
-  if (!language) {
-    return res.status(400).json({ error: 'Missing required field: language' });
+  const apiKey = process.env.ONECOMPILER_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({
+      stdout: '',
+      stderr: 'Server configuration error: ONECOMPILER_API_KEY is not set.',
+      status: 'error',
+    });
   }
 
-  // Map our internal language name → Piston language identifier
-  const pistonLang = PISTON_LANGUAGE_MAP[language] ?? language;
+  const { language, stdin = '', files = [] } = req.body ?? {};
+  if (!language) {
+    return res.status(400).json({ stdout: '', stderr: 'Missing field: language', status: 'error' });
+  }
 
-  const pistonBody = {
-    language: pistonLang,
-    version: '*',      // always use latest available version
-    files,
-    stdin,
-  };
-
-  console.log(`[proxy] Running ${pistonLang} via Piston…`);
+  const payload = JSON.stringify({ language, stdin, files });
+  console.log(`[proxy] → OneCompiler | lang=${language} | payload=${payload.slice(0, 120)}`);
 
   try {
-    const upstream = await fetch('https://emkc.org/api/v2/piston/execute', {
+    const upstream = await fetch('https://api.onecompiler.com/v1/run', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(pistonBody),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
+      },
+      body: payload,
     });
 
+    // Always read as text first – prevents "Unexpected end of JSON" on empty bodies
     const rawText = await upstream.text();
-    console.log(`[proxy] Piston responded ${upstream.status}: ${rawText.slice(0, 300)}`);
+    console.log(`[proxy] ← OneCompiler ${upstream.status}: ${rawText.slice(0, 300)}`);
 
     if (!rawText.trim()) {
-      return res.status(502).json({
-        error: `Piston returned an empty response (HTTP ${upstream.status}).`,
+      // OneCompiler returned 200 with empty body – likely a plan/key issue
+      return res.status(200).json({
+        stdout: '',
+        stderr:
+          `OneCompiler returned an empty ${upstream.status} response. ` +
+          'Verify that your ONECOMPILER_API_KEY is valid and your plan supports server-to-server requests.',
+        status: 'error',
       });
     }
 
@@ -78,33 +66,20 @@ app.post('/api/code-runner', async (req, res) => {
       data = JSON.parse(rawText);
     } catch {
       return res.status(502).json({
-        error: `Piston returned non-JSON (HTTP ${upstream.status}): ${rawText.slice(0, 300)}`,
+        stdout: '',
+        stderr: `OneCompiler returned non-JSON (HTTP ${upstream.status}): ${rawText.slice(0, 300)}`,
+        status: 'error',
       });
     }
 
-    // Piston wraps output inside data.run; normalise to a flat shape the
-    // client's parseRunnerResponse already understands via .stdout / .stderr
-    if (data.run) {
-      return res.status(200).json({
-        stdout: data.run.stdout ?? '',
-        stderr: data.run.stderr ?? '',
-        // Piston treats code 0 as success
-        status: data.run.code === 0 ? 'success' : 'error',
-        code:   data.run.code,
-        signal: data.run.signal ?? null,
-      });
-    }
-
-    // If Piston returned an error object (e.g. unsupported language)
-    return res.status(upstream.status).json({
+    res.status(upstream.status).json(data);
+  } catch (err) {
+    console.error('[proxy] fetch error:', err);
+    res.status(502).json({
       stdout: '',
-      stderr: data.message ?? data.error ?? JSON.stringify(data),
+      stderr: `Proxy could not reach OneCompiler: ${String(err)}`,
       status: 'error',
     });
-
-  } catch (err) {
-    console.error('[proxy] Piston fetch failed:', err);
-    res.status(502).json({ error: 'Proxy could not reach Piston.', details: String(err) });
   }
 });
 
@@ -112,7 +87,7 @@ app.post('/api/code-runner', async (req, res) => {
 const distDir = path.join(__dirname, '..', 'dist');
 app.use(express.static(distDir));
 
-// SPA fallback – React Router needs this
+// SPA fallback – React Router
 app.get('*', (_req, res) => {
   res.sendFile(path.join(distDir, 'index.html'));
 });
