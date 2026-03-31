@@ -6,10 +6,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── CORS for the proxy route ─────────────────────────────────────────────────
-app.use('/api/code-runner', (req, res, next) => {
+// ─── CORS for API routes ──────────────────────────────────────────────────────
+app.use('/api', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
@@ -17,13 +17,41 @@ app.use('/api/code-runner', (req, res, next) => {
 
 app.use(express.json());
 
+// Helper: resolve the API key from multiple possible env var names
+function resolveApiKey() {
+  return (
+    process.env.ONECOMPILER_API_KEY ||
+    process.env.VITE_ONECOMPILER_API_KEY ||
+    process.env.VITE_RAPIDAPI_KEY ||
+    ''
+  );
+}
+
+// ─── Diagnostic endpoint – call /api/debug in browser to inspect server config ─
+app.get('/api/debug', (_req, res) => {
+  const key = resolveApiKey();
+  res.json({
+    hasKey: !!key,
+    keyPreview: key ? `${key.slice(0, 8)}...${key.slice(-4)}` : '(none)',
+    nodeVersion: process.version,
+    platform: process.platform,
+    env: {
+      ONECOMPILER_API_KEY:      !!process.env.ONECOMPILER_API_KEY,
+      VITE_ONECOMPILER_API_KEY: !!process.env.VITE_ONECOMPILER_API_KEY,
+      VITE_RAPIDAPI_KEY:        !!process.env.VITE_RAPIDAPI_KEY,
+    },
+  });
+});
+
 // ─── OneCompiler proxy ────────────────────────────────────────────────────────
 app.post('/api/code-runner', async (req, res) => {
-  const apiKey = process.env.ONECOMPILER_API_KEY;
+  const apiKey = resolveApiKey();
   if (!apiKey) {
     return res.status(500).json({
       stdout: '',
-      stderr: 'Server configuration error: ONECOMPILER_API_KEY is not set.',
+      stderr:
+        'Server configuration error: No OneCompiler API key found.\n' +
+        'Set ONECOMPILER_API_KEY in your Render environment variables.',
       status: 'error',
     });
   }
@@ -34,7 +62,7 @@ app.post('/api/code-runner', async (req, res) => {
   }
 
   const payload = JSON.stringify({ language, stdin, files });
-  console.log(`[proxy] → OneCompiler | lang=${language} | payload=${payload.slice(0, 120)}`);
+  console.log(`[proxy] → OneCompiler | lang=${language} | keyPrefix=${apiKey.slice(0, 8)}`);
 
   try {
     const upstream = await fetch('https://api.onecompiler.com/v1/run', {
@@ -46,17 +74,19 @@ app.post('/api/code-runner', async (req, res) => {
       body: payload,
     });
 
-    // Always read as text first – prevents "Unexpected end of JSON" on empty bodies
     const rawText = await upstream.text();
-    console.log(`[proxy] ← OneCompiler ${upstream.status}: ${rawText.slice(0, 300)}`);
+    console.log(`[proxy] ← OneCompiler status=${upstream.status} bodyLen=${rawText.length} body=${rawText.slice(0, 400)}`);
 
     if (!rawText.trim()) {
-      // OneCompiler returned 200 with empty body – likely a plan/key issue
+      // OneCompiler returned 200 with completely empty body.
+      // This happens when the free-tier API blocks requests from cloud/datacenter IPs.
+      // The key itself may be valid but the plan doesn't support server-to-server calls from this IP.
       return res.status(200).json({
         stdout: '',
         stderr:
-          `OneCompiler returned an empty ${upstream.status} response. ` +
-          'Verify that your ONECOMPILER_API_KEY is valid and your plan supports server-to-server requests.',
+          `OneCompiler returned an empty response (HTTP ${upstream.status}).\n` +
+          'This usually means the OneCompiler free plan is blocking requests from cloud server IPs.\n' +
+          'Check Render logs at /api/debug to verify the key is loaded, then check your OneCompiler plan.',
         status: 'error',
       });
     }
