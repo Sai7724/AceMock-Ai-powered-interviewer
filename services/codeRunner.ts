@@ -205,7 +205,6 @@ const DEFAULT_DISABLED_RUNNER: RunnerConfig = {
   runtimeLabel: 'Run console is not available for this selection',
 };
 
-const ONECOMPILER_BASE_URL = 'https://api.onecompiler.com/v1/run';
 
 type RunnerEndpoint = {
   url: string;
@@ -224,6 +223,7 @@ function getRunnerEndpoint(): RunnerEndpoint {
     };
   }
 
+  // In local dev the Vite dev-server proxy handles /api/code-runner → OneCompiler.
   if (import.meta.env.DEV) {
     return {
       url: '/api/code-runner',
@@ -232,11 +232,12 @@ function getRunnerEndpoint(): RunnerEndpoint {
     };
   }
 
-  return {
-    url: ONECOMPILER_BASE_URL,
-    attachApiKey: true,
-    source: 'direct',
-  };
+  // Production fallback: browsers block direct calls to OneCompiler due to CORS.
+  // If we reach here it means VITE_CODE_RUNNER_URL was not set during the build.
+  // Attempting the direct URL would always fail, so surface a clear error instead.
+  throw new Error(
+    'Code runner is not configured. Set VITE_CODE_RUNNER_URL=/api/code-runner in your Render environment variables and redeploy.'
+  );
 }
 
 function getDefaultFileName(language: string): string {
