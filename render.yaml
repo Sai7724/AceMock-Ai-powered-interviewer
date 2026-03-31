@@ -8,11 +8,6 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
-      # ── Code runner proxy ──────────────────────────────────────────────────
-      # The raw OneCompiler key (server-side only; NOT prefixed with VITE_).
-      - key: ONECOMPILER_API_KEY
-        sync: false          # fill in the Render dashboard
-
       # ── Frontend env vars bundled at build time ────────────────────────────
       - key: VITE_GEMINI_API_KEY
         sync: false
@@ -21,6 +16,7 @@ services:
       - key: VITE_SUPABASE_PUBLISHABLE_KEY
         sync: false
 
-      # Tell the frontend to use the proxy path (same origin, no CORS)
+      # Tell the frontend to use the server-side proxy (same origin, no CORS)
+      # Piston API is free and requires no API key.
       - key: VITE_CODE_RUNNER_URL
         value: /api/code-runner
