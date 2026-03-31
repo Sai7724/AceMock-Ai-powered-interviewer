@@ -35,13 +35,39 @@ app.post('/api/code-runner', async (req, res) => {
       body: JSON.stringify(req.body),
     });
 
-    const data = await upstream.json();
+    // Read as text first — avoids "Unexpected end of JSON" when body is empty
+    const rawText = await upstream.text();
+    console.log(`[proxy] OneCompiler responded ${upstream.status}: ${rawText.slice(0, 200)}`);
+
+    if (!rawText.trim()) {
+      // Empty body — surface a clear error instead of crashing
+      return res.status(upstream.ok ? 200 : upstream.status).json({
+        stdout: '',
+        stderr: `Code runner returned an empty response (HTTP ${upstream.status}). ` +
+                'This usually means an invalid API key or rate limit. Check ONECOMPILER_API_KEY.',
+        status: 'error',
+      });
+    }
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      // Non-JSON body (e.g. HTML error page from a gateway)
+      return res.status(502).json({
+        stdout: '',
+        stderr: `Code runner returned unexpected content (HTTP ${upstream.status}): ${rawText.slice(0, 300)}`,
+        status: 'error',
+      });
+    }
+
     res.status(upstream.status).json(data);
   } catch (err) {
     console.error('[proxy] OneCompiler fetch failed:', err);
     res.status(502).json({ error: 'Proxy could not reach OneCompiler.', details: String(err) });
   }
 });
+
 
 // ─── Serve the Vite production build ─────────────────────────────────────────
 const distDir = path.join(__dirname, '..', 'dist');

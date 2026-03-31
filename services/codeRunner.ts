@@ -260,14 +260,35 @@ function getDefaultFileName(language: string): string {
 }
 
 async function parseRunnerResponse(response: Response): Promise<RunResult> {
-  const data: {
+  // Read as text first so we never crash on an empty or non-JSON body
+  const rawText = await response.text();
+
+  if (!rawText.trim()) {
+    return {
+      stdout: '',
+      stderr: `Empty response from code runner (HTTP ${response.status}). Check your API key and proxy configuration.`,
+      code: 1,
+    };
+  }
+
+  let data: {
     stdout?: string;
     stderr?: string;
     exception?: string;
     status?: string;
     error?: string;
     message?: string;
-  } = await response.json();
+  };
+
+  try {
+    data = JSON.parse(rawText);
+  } catch {
+    return {
+      stdout: '',
+      stderr: `Code runner returned unexpected content (HTTP ${response.status}): ${rawText.slice(0, 300)}`,
+      code: 1,
+    };
+  }
 
   const stdout = data.stdout ?? '';
   let stderr = data.stderr ?? '';
@@ -288,6 +309,7 @@ async function parseRunnerResponse(response: Response): Promise<RunResult> {
     code: status === 'success' ? 0 : 1,
   };
 }
+
 
 export function getRunnerInfo(selection: string) {
   const config = SELECTION_RUNNER_CONFIG[selection] ?? DEFAULT_DISABLED_RUNNER;
