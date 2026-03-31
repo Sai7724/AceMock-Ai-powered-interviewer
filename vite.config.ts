@@ -12,21 +12,12 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // In local dev, forward /api/code-runner → OneCompiler directly.
-      // The API key is injected here so it never ships in the browser bundle.
+      // In local dev, forward /api/code-runner → Piston (free, no API key needed).
+      // This mirrors exactly what the Express server does in production.
       '/api/code-runner': {
-        target: 'https://api.onecompiler.com',
+        target: 'https://emkc.org',
         changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/api\/code-runner/, '/v1/run'),
-        configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            const key =
-              process.env.VITE_ONECOMPILER_API_KEY ||
-              process.env.VITE_RAPIDAPI_KEY ||
-              '';
-            if (key) proxyReq.setHeader('X-API-Key', key);
-          });
-        },
+        rewrite: () => '/api/v2/piston/execute',
       },
     },
   },

@@ -266,19 +266,12 @@ async function parseRunnerResponse(response: Response): Promise<RunResult> {
   if (!rawText.trim()) {
     return {
       stdout: '',
-      stderr: `Empty response from code runner (HTTP ${response.status}). Check your API key and proxy configuration.`,
+      stderr: `Empty response from code runner (HTTP ${response.status}). Check your proxy configuration.`,
       code: 1,
     };
   }
 
-  let data: {
-    stdout?: string;
-    stderr?: string;
-    exception?: string;
-    status?: string;
-    error?: string;
-    message?: string;
-  };
+  let data: Record<string, unknown>;
 
   try {
     data = JSON.parse(rawText);
@@ -290,15 +283,30 @@ async function parseRunnerResponse(response: Response): Promise<RunResult> {
     };
   }
 
-  const stdout = data.stdout ?? '';
-  let stderr = data.stderr ?? '';
-  const status = data.status ?? '';
-
-  if (data.exception) {
-    stderr = stderr ? `${stderr}\n${data.exception}` : data.exception;
+  // ── Piston native shape (used in local dev where Vite proxy hits Piston directly) ──
+  // { language, version, run: { stdout, stderr, code, signal } }
+  if (data.run && typeof data.run === 'object') {
+    const run = data.run as Record<string, unknown>;
+    return {
+      stdout: (run.stdout as string) ?? '',
+      stderr: (run.stderr as string) ?? '',
+      code:   typeof run.code === 'number' ? run.code : (run.code === 0 ? 0 : 1),
+      signal: (run.signal as string | null) ?? null,
+    };
   }
 
-  const topLevelMessage = data.error ?? data.message ?? '';
+  // ── Flattened shape (used in production where Express proxy normalises the response) ──
+  // { stdout, stderr, status, code }
+  const stdout = (data.stdout as string) ?? '';
+  let stderr   = (data.stderr as string) ?? '';
+  const status = (data.status as string) ?? '';
+
+  if (data.exception) {
+    const ex = data.exception as string;
+    stderr = stderr ? `${stderr}\n${ex}` : ex;
+  }
+
+  const topLevelMessage = ((data.error ?? data.message) as string) ?? '';
   if (topLevelMessage) {
     stderr = stderr ? `${stderr}\n${topLevelMessage}` : topLevelMessage;
   }
@@ -309,6 +317,7 @@ async function parseRunnerResponse(response: Response): Promise<RunResult> {
     code: status === 'success' ? 0 : 1,
   };
 }
+
 
 
 export function getRunnerInfo(selection: string) {
@@ -331,6 +340,23 @@ export function getRunnerRuntimeLabel(selection: string): string {
   return getRunnerInfo(selection).runtimeLabel;
 }
 
+// Map our internal language names → Piston runtime identifiers.
+// This runs on the client so both local dev (Vite proxy) and production (Express proxy) get the right payload.
+const PISTON_LANGUAGE_MAP: Record<string, string> = {
+  javascript: 'javascript',
+  typescript: 'typescript',
+  python:     'python',
+  java:       'java',
+  cpp:        'c++',
+  csharp:     'csharp',
+  go:         'go',
+  rust:       'rust',
+  php:        'php',
+  ruby:       'ruby',
+  kotlin:     'kotlin',
+  swift:      'swift',
+};
+
 export async function runCode(selection: string, code: string, stdin = ''): Promise<RunResult> {
   const runner = getRunnerInfo(selection);
 
@@ -339,26 +365,17 @@ export async function runCode(selection: string, code: string, stdin = ''): Prom
   }
 
   const endpoint = getRunnerEndpoint();
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
 
-  if (endpoint.attachApiKey) {
-    const apiKey = import.meta.env.VITE_ONECOMPILER_API_KEY || import.meta.env.VITE_RAPIDAPI_KEY || '';
-
-    if (!apiKey) {
-      throw new Error('Missing OneCompiler API key. Set VITE_ONECOMPILER_API_KEY in .env.local.');
-    }
-
-    headers['X-API-Key'] = apiKey;
-  }
+  // Map the internal language name to what Piston expects
+  const pistonLanguage = PISTON_LANGUAGE_MAP[runner.language] ?? runner.language;
 
   try {
     const response = await fetch(endpoint.url, {
       method: 'POST',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        language: runner.language,
+        language: pistonLanguage,
+        version: '*',           // Piston requires a version field; '*' = latest
         stdin,
         files: [
           {
@@ -371,13 +388,7 @@ export async function runCode(selection: string, code: string, stdin = ''): Prom
 
     if (!response.ok) {
       let details = '';
-
-      try {
-        details = await response.text();
-      } catch {
-        details = '';
-      }
-
+      try { details = await response.text(); } catch { /* ignore */ }
       throw new Error(
         details
           ? `Execution request failed (${response.status}): ${details}`
@@ -389,15 +400,13 @@ export async function runCode(selection: string, code: string, stdin = ''): Prom
   } catch (error) {
     if (error instanceof TypeError && /fetch/i.test(error.message)) {
       throw new Error(
-        endpoint.source === 'proxy'
-          ? 'Unable to reach the local code-runner proxy. Restart the dev server and try again.'
-          : 'The browser blocked the direct code-runner request. Configure a server-side proxy or use the local dev server.'
+        'Unable to reach the code-runner proxy. Restart the dev server and try again.'
       );
     }
-
     throw error;
   }
 }
+
 
 export async function checkAvailableLanguages(): Promise<string[]> {
   return Object.keys(SELECTION_RUNNER_CONFIG).filter((selection) => getRunnerInfo(selection).isAvailable);
